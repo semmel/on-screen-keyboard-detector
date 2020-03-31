@@ -1,0 +1,20 @@
+{
+	"laxbreak": true,
+	"noempty": true,
+	"noarg": true,
+	"laxcomma": true,
+	"unused": "strict",
+	"esversion": 9,
+	"sub": true,
+	"devel": true,
+	"immed": true,
+	"browser": true,
+	"mocha": true,
+	"node": true,
+	"curly": true,
+	"undef": true,
+	"nonew": true,
+	"forin": true,
+	"shadow": "outer",
+	"predef": [ "require", "requirejs", "define", "AbortController", "customElements", "StreamMeGlobals", "ResizeObserver", "dictionary", "URLSearchParams"]
+}

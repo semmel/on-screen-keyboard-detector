@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="referrer" content="no-referrer"/>
+	<meta name="referrer" content="never"/>
+	<title>Testbed</title>
+	<style type="text/css">
+		:root {
+			color-scheme: light dark;
+		}
+
+		:root, body {
+			position: fixed;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			margin: 0;
+			padding: 0;
+			height: 100%;
+		}
+
+		body {
+			font-family: sans-serif;
+		}
+
+		input {
+			width: 100%;
+			margin: 10px 0;
+			box-sizing: border-box;
+		}
+	</style>
+</head>
+<body>
+<input type="email" name="CE" autofocus enterkeyhint="next">
+<input type="number" name="DN">
+<input type="time" name="ETime" >
+<script type="module">
+	import oskd from '../dist/oskd.mjs';
+
+	window.oskdEvents = [];
+
+	oskd(event => window.oskdEvents.push(event));
+
+</script>
+</body>
+</html>
