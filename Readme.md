@@ -1,3 +1,7 @@
+[![NPM Version](https://img.shields.io/npm/v/on-screen-keyboard-detector.svg?style=flat-square)](https://www.npmjs.com/package/on-screen-keyboard-detector)
+[![Dependencies](https://img.shields.io/david/semmel/on-screen-keyboard-detector.svg?style=flat-square)](https://david-dm.org/semmel/on-screen-keyboard-detector)
+[![Reactive Programming](https://img.shields.io/badge/code%20style-reactive%2C%20functional-blue?color=b7178c)](http://reactivex.io)
+
 On-screen keyboard detector
 =============================
 > Detects the presence of the on-screen keyboard (OSK) shown by mobile browsers when the user interacts with input controls on a webpage.
@@ -11,7 +15,7 @@ At the time of writing on
 - *Mobile Safari* the keyboard is excluded from the visual viewport, while on
 - *Chrome for Android* the keyboard is excluded from both the visual and the layout viewport.
 
-TODO: small sketch of the viewports with the OSK
+![Browser Viewports](./doc/browser_viewports.png)
 
 *Chrome's* behaviour makes it necessary to also observe `focusin`, `focusout`, `resize` and `visibilitychange` events. 
 
@@ -19,6 +23,11 @@ Caveats
 ------
 - On *Chrome for Android* the keyboard must be *initially hidden* when subscribing to the detector.
 - On *Chrome for Android* the `hidden` and `visible` events are dispatched with a approximate 1 second delay.
+- On *iOS* requires *Safari* v. ≥ 13
+
+Install
+-------
+`npm install on-screen-keyboard-detector`
 
 Usage
 -----
@@ -73,11 +82,14 @@ Tests
 - running a local webserver (see `TEST_SERVER` in `package.json`)
 
 ### Android
-For real devices make sure the adb server is running (`adb start-server`) and a device is connected via USB or Wifi  (`adb devices -l`)
-`npm run test:chrome`
+For real devices make sure 
+- the adb server is running (`adb start-server`), and 
+- a device is connected via USB or Wifi  (`adb devices -l`)
+- ggf. `adb tcpip 5555` and `adb connect <test phone ip address>` (see `"setup_test"` in `package.json`)
+Then run `npm run test:chrome`.
 
 ### iOS
-Connect a device where `Remote Automatation` is enabled for Safari (see the [Webkit blog][4]).
+Connect a device where `Remote Automatation` is enabled for Safari (see the [Webkit blog][4]). Then run `npm run test:ios`
 
 **iOS tests should be performed manually (see the [demo](./demo) folder), because Webdriver controlled Mobile Safari does not show the virtual keyboard**
 

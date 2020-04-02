@@ -3,9 +3,11 @@ import includePaths from 'rollup-plugin-includepaths';
 
 const
 	packageConfig = require('./package.json'),
-	bannerText = ` // On-screen keyboard detector (OSKD) v.${packageConfig.version}
-	// (c) 2020-${new Date().getFullYear()} Matthias Seemann
-	// OSKD may be freely distributed under the MIT license.`;
+	bannerText = `/* @license
+	On-screen keyboard detector (OSKD) v.${packageConfig.version}
+	(c) 2020-${new Date().getFullYear()} Matthias Seemann
+	OSKD may be freely distributed under the MIT license.
+*/`;
 
 const
 	config = {
@@ -19,24 +21,37 @@ const
 			},
 			{
 				file: "dist/oskd.min.mjs",
-				format: "esm"
+				format: "esm",
+				banner: bannerText
 			},
 			{
 				file: "dist/oskd.js",
 				format: "umd",
 				name: "OSKD",
-				exports: 'named'
+				exports: 'named',
+				banner: bannerText
 			},
 			{
 				file: "dist/oskd.min.js",
 				format: "umd",
 				exports: 'named',
-				name: "OSKD"
+				name: "OSKD",
+				banner: bannerText
 			}
 		],
 		plugins: [
-         terser({
-	        include: [/^.+\.min\.m?js$/]
+			terser({
+				include: [/^.+\.min\.m?js$/],
+				output: {
+					comments: function (node, comment) {
+						var text = comment.value;
+						var type = comment.type;
+						if (type === 'comment2') {
+							// multiline comment
+							return /@license/i.test(text);
+						}
+					}
+				}
 	      }),
 			includePaths({
 				include: {

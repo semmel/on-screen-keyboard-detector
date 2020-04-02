@@ -1,28 +1,8 @@
 {
-  "name": "onscreen-keyboard-detector",
-  "version": "1.0.0",
-  "description": "Detects presence of the On-Screen-Keyboard in mobile browsers",
-  "files": [
-    "./dist"
-  ],
-  "main": "index.js",
-  "scripts": {
-    "demo:prepare": "rollup --config rollup.emittery2esm.config.js",
-    "setup_test": "adb tcpip 5555 && adb connect 192.168.7.184",
-    "test:chrome": "SELENIUM_BROWSER=chrome TEST_SERVER=http://192.168.7.171:8081 mocha test/simple_text_input.js",
-    "test:ios": "SELENIUM_BROWSER=safari TEST_SERVER=http://192.168.7.171:8081 mocha test/simple_text_input.js",
-    "prepack": "rollup -c"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/semmel/on-screen-keyboard-detector.git"
-  },
-  "author": "Matthias Seemann",
-  "license": "MIT",
+  "author": "Matthias Seemann <seemann@visisoft.de> (https://github.com/semmel/)",
   "bugs": {
     "url": "https://github.com/semmel/on-screen-keyboard-detector/issues"
   },
-  "homepage": "https://github.com/semmel/on-screen-keyboard-detector#readme",
   "dependencies": {
     "@most/adapter": "^1.0.0",
     "@most/core": "^1.5.0",
@@ -30,11 +10,34 @@
     "@most/scheduler": "^1.2.3",
     "ramda": "^0.27.0"
   },
+  "description": "Detects presence of the On-Screen-Keyboard in mobile browsers",
   "devDependencies": {
     "es-module-shims": "^0.4.6",
     "rollup-plugin-includepaths": "^0.2.3"
   },
+  "files": [
+    "/dist",
+    "/doc/browser_viewports.png"
+  ],
+  "homepage": "https://github.com/semmel/on-screen-keyboard-detector#readme",
+  "keywords": ["keyboard", "on-screen", "virtual", "detector", "visibility", "android", "ios"],
+  "license": "MIT",
+  "main": "src/osk-detector.js",
+  "name": "on-screen-keyboard-detector",
   "peerDependencies": {
     "emittery": "^0.6.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/semmel/on-screen-keyboard-detector.git"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "demo:prepare": "rollup --config rollup.emittery2esm.config.js",
+    "prepack": "npm run build",
+    "setup_test": "adb tcpip 5555 && adb connect 192.168.7.184",
+    "test:chrome": "SELENIUM_BROWSER=chrome TEST_SERVER=http://192.168.7.171:8081 mocha test/simple_text_input.js",
+    "test:ios": "SELENIUM_BROWSER=safari TEST_SERVER=http://192.168.7.171:8081 mocha test/simple_text_input.js"
+  },
+  "version": "1.0.0"
 }
