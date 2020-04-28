@@ -60,7 +60,7 @@
 		emitter = new Emitter(),
 		outBox = document.querySelector('.outbox');
 
-	oskd(visibility => emitter.emit(visibility));
+	oskd.subscribe(visibility => emitter.emit(visibility));
 
 	emitter.on('hidden', () => outBox.textContent += "hidden\n");
 	emitter.on('visible', () => outBox.textContent += "visible\n");
