@@ -1,7 +1,7 @@
 /* @license
-On-screen keyboard detector (OSKD) v.1.0.0
-(c) 2020-2020 Matthias Seemann
-OSKD may be freely distributed under the MIT license.
+	On-screen keyboard detector (OSKD) v.1.0.0
+	(c) 2020-2020 Matthias Seemann
+	OSKD may be freely distributed under the MIT license.
 */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :

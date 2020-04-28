@@ -1,7 +1,7 @@
 /* @license
-On-screen keyboard detector (OSKD) v.1.0.0
-(c) 2020-2020 Matthias Seemann
-OSKD may be freely distributed under the MIT license.
+	On-screen keyboard detector (OSKD) v.1.0.0
+	(c) 2020-2020 Matthias Seemann
+	OSKD may be freely distributed under the MIT license.
 */
 /** @license MIT License (c) copyright 2010-2016 original author or authors */
 function t(t,n){for(var e=n.length,r=new Array(e+1),i=0;i<e;++i)r[i]=n[i];return r[e]=t,r}function n(t,n,e){for(var r=n,i=0,o=e.length;i<o;++i)r=t(r,e[i],i);return r}function e(t,n){if(t<0)throw new TypeError("i must be >= 0");var e=n.length;return 0===e||t>=e?n:1===e?[]:function(t,n,e){var r=new Array(e),i=void 0;for(i=0;i<t;++i)r[i]=n[i];for(i=t;i<e;++i)r[i]=n[i+1];return r}(t,n,e-1)}function r(t,n){for(var e=0,r=n.length;e<r;++e)if(t===n[e])return e;return-1}

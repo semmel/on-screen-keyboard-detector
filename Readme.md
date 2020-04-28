@@ -19,7 +19,7 @@ At the time of writing on
 
 *Chrome's* behaviour makes it necessary to also observe `focusin`, `focusout`, `resize` and `visibilitychange` events. 
 
-Caveats
+Limitations
 ------
 - On *Chrome for Android* the keyboard must be *initially hidden* when subscribing to the detector.
 - On *Chrome for Android* the `hidden` and `visible` events are dispatched with a approximate 1 second delay.
