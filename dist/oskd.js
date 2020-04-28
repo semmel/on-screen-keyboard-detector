@@ -1,5 +1,5 @@
 /* @license
-	On-screen keyboard detector (OSKD) v.1.0.0
+	On-screen keyboard detector (OSKD) v.2.0.0-alpha
 	(c) 2020-2020 Matthias Seemann
 	OSKD may be freely distributed under the MIT license.
 */
@@ -4410,16 +4410,59 @@
   });
 
   /**
+   * on-screen-keyboard-detector: oskd-ios.js
+   *
+   * Created by Matthias Seemann on 28.04.2020.
+   */
+
+  const
+  	isVisualViewportSupported = "visualViewport" in window;
+
+  function isSupported() {
+  	 return isVisualViewportSupported;
+  }
+
+  /**
+   *
+   * @param {function(String)} callback
+   * @return {function(): void}
+   */
+  // initWithCallback :: (String -> *) -> (... -> undefined)
+  function subscribe(callback) {
+  	if (!isSupported()) {
+  		console.warn("On-Screen-Keyboard detection not supported on this version of iOS");
+  		return () => undefined;
+  	}
+  	
+  	const
+  		[ induceUnsubscribe, userUnsubscription ] = createAdapter(),
+  		scheduler = newDefaultScheduler(),
+  		
+  		oskd = pipe$1(
+  			map$1(evt => evt.target.height === window.innerHeight ? 'hidden' : 'visible'),
+  			skipRepeats,
+  			until$$1(userUnsubscription),
+  			tap$$1(callback)
+  		)(resize(window.visualViewport));
+  		
+  		runEffects$$1(oskd, scheduler);
+  		
+  		return induceUnsubscribe;
+  }
+
+  var OSKD_IOS = {
+  	subscribe,
+  	isSupported
+  };
+
+  /**
    * onscreen-keyboard-detector: osk-detector.js
    *
    * Created by Matthias Seemann on 21.03.2020.
-   * Copyright (c) 2020 Visisoft OHG. All rights reserved.
    */
 
   const
   	isiOS = /iPhone/.test(navigator.userAgent),
-  	
-  	isVisualViewportSupported = "visualViewport" in window,
 
   	getScreenOrientationType = () =>
   		screen.orientation.type.startsWith('portrait') ? 'portrait' : 'landscape',
@@ -4429,6 +4472,14 @@
 
   	isAnyElementActive = () => document.activeElement && (document.activeElement !== document.body);
 
+  function isSupported$1() {
+  	if (isiOS) {
+  		return OSKD_IOS.isSupported();
+  	}
+  	
+  	return true;
+  }
+
   /**
    *
    * @param {function(String)} userCallback
@@ -4436,26 +4487,8 @@
    */
   // initWithCallback :: (String -> *) -> (... -> undefined)
   function initWithCallback(userCallback) {
-  	if (isiOS && !isVisualViewportSupported) {
-  		throw new Error("On-Screen-Keyboard detection not supported on this version of iOS");
-  	}
-  	
-  	const
-  		[ induceUnsubscribe, userUnsubscription ] = createAdapter(),
-  		scheduler = newDefaultScheduler();
-  	
   	if(isiOS) {
-  		const
-  			iOS_OSK = pipe$1(
-  				map$1(evt => evt.target.height === window.innerHeight ? 'hidden' : 'visible'),
-  				skipRepeats,
-  				until$$1(userUnsubscription),
-  				tap$$1(userCallback)
-  			)(resize(window.visualViewport));
-  		
-  		runEffects$$1(iOS_OSK, scheduler);
-  		
-  		return induceUnsubscribe;
+  		return OSKD_IOS.subscribe(userCallback);
   	}
   	
   	const
@@ -4464,6 +4497,9 @@
   		RESIZE_QUIET_PERIOD = 500,
   		LAYOUT_RESIZE_TO_LAYOUT_HEIGHT_FIX_DELAY =
   			Math.max(INPUT_ELEMENT_FOCUS_JUMP_DELAY, SCREEN_ORIENTATION_TO_WINDOW_RESIZE_DELAY) - RESIZE_QUIET_PERIOD + 200,
+  		
+  		[ induceUnsubscribe, userUnsubscription ] = createAdapter(),
+  		scheduler = newDefaultScheduler(),
   		
   		// assumes initially hidden OSK
   		initialLayoutHeight = window.innerHeight,
@@ -4591,7 +4627,12 @@
   	return induceUnsubscribe;
   }
 
-  exports.default = initWithCallback;
+  var oskDetector = {
+  	subscribe: initWithCallback,
+  	isSupported: isSupported$1
+  };
+
+  exports.default = oskDetector;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

@@ -35,7 +35,7 @@ Usage
 ```javascript
 import oskd from 'on-screen-keyboard-detector';
 
-const unsubscribe = oskd(visibility => {
+const unsubscribe = oskd.subscribe(visibility => {
 	if (visibility === "hidden"){
 		// ...
 	}
@@ -50,11 +50,14 @@ unsubscribe();
 
 API
 ---
-### oskd(listenerCallback)
+### subscribe(listenerCallback)
 Begins to observe browser events and invokes the provided callback function
 when a change in the keyboard visibility is detected.
 
 TODO: mention the parameters and the return value
+
+### isSupported()
+Returns `true` if the browser runtime supports oskd.
 
 Advanced Usage
 --------------
