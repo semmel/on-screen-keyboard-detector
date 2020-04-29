@@ -64,8 +64,8 @@ Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming 
 }
 </script>
 <script type="module-shim">
-	import oskd from '../src/osk-detector.js';
-	const onOSKVisibilityChange = oskd.subscribe;
+	import { subscribe } from '../src/osk-detector.js';
+	const onOSKVisibilityChange = subscribe;
 	const unsubscribe =
 		onOSKVisibilityChange(visibilityState => console.log(`OSK ${visibilityState}`));
 

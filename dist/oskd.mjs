@@ -4416,6 +4416,16 @@ function isSupported() {
 	 return isVisualViewportSupported;
 }
 
+const skipDuplicates = whenDifferent => {
+	var previous = "_one_time_initial_";
+	return function (next) {
+		if (next !== previous) {
+			previous = next;
+			whenDifferent(next);
+		}
+	};
+};
+
 /**
  *
  * @param {function(String)} callback
@@ -4429,25 +4439,16 @@ function subscribe(callback) {
 	}
 	
 	const
-		[ induceUnsubscribe, userUnsubscription ] = createAdapter(),
-		scheduler = newDefaultScheduler(),
-		
-		oskd = pipe$1(
-			map$1(evt => evt.target.height === window.innerHeight ? 'hidden' : 'visible'),
-			skipRepeats,
-			until$$1(userUnsubscription),
-			tap$$1(callback)
-		)(resize(window.visualViewport));
-		
-		runEffects$$1(oskd, scheduler);
-		
-		return induceUnsubscribe;
+		nonRepeatingCallback = skipDuplicates(callback),
+	
+		onResize = evt => {
+			nonRepeatingCallback(evt.target.height === window.innerHeight ? 'hidden' : 'visible');
+		};
+	
+	visualViewport.addEventListener('resize', onResize);
+	
+	return function(){ visualViewport.removeEventListener('resize', onResize); };
 }
-
-const OSKD_IOS = {
-	subscribe,
-	isSupported
-};
 
 /**
  * onscreen-keyboard-detector: osk-detector.js
@@ -4468,7 +4469,7 @@ const
 
 function isSupported$1() {
 	if (isiOS) {
-		return OSKD_IOS.isSupported();
+		return isSupported();
 	}
 	
 	return true;
@@ -4482,7 +4483,7 @@ function isSupported$1() {
 // initWithCallback :: (String -> *) -> (... -> undefined)
 function initWithCallback(userCallback) {
 	if(isiOS) {
-		return OSKD_IOS.subscribe(userCallback);
+		return subscribe(userCallback);
 	}
 	
 	const
@@ -4621,9 +4622,4 @@ function initWithCallback(userCallback) {
 	return induceUnsubscribe;
 }
 
-const oskDetector = {
-	subscribe: initWithCallback,
-	isSupported: isSupported$1
-};
-
-export default oskDetector;
+export { isSupported$1 as isSupported, initWithCallback as subscribe };

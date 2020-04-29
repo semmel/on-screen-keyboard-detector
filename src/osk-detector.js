@@ -21,7 +21,7 @@ import identical from 'ramda/identical.js';
 import keys from 'ramda/keys.js';
 import propEq from 'ramda/propEq.js';
 
-import OSKD_IOS from './oskd-ios.js';
+import {subscribe as subscribeOnIOS, isSupported as isSupportedOnIOS} from './oskd-ios.js';
 
 const
 	isiOS = /iPhone/.test(navigator.userAgent),
@@ -36,7 +36,7 @@ const
 
 function isSupported() {
 	if (isiOS) {
-		return OSKD_IOS.isSupported();
+		return isSupportedOnIOS();
 	}
 	
 	return true;
@@ -50,7 +50,7 @@ function isSupported() {
 // initWithCallback :: (String -> *) -> (... -> undefined)
 function initWithCallback(userCallback) {
 	if(isiOS) {
-		return OSKD_IOS.subscribe(userCallback);
+		return subscribeOnIOS(userCallback);
 	}
 	
 	const
@@ -189,7 +189,7 @@ function initWithCallback(userCallback) {
 	return induceUnsubscribe;
 }
 
-export default {
-	subscribe: initWithCallback,
+export {
+	initWithCallback as subscribe,
 	isSupported
 };

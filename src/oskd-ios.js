@@ -4,18 +4,22 @@
  * Created by Matthias Seemann on 28.04.2020.
  */
 
-import { map,  runEffects, skipRepeats, tap, until } from '@most/core';
-import { newDefaultScheduler } from '@most/scheduler';
-import { resize } from '@most/dom-event';
-import { createAdapter } from '../node_modules/@most/adapter/dist/index.mjs';
-import pipe from 'ramda/pipe.js';
-
 const
 	isVisualViewportSupported = "visualViewport" in window;
 
 function isSupported() {
 	 return isVisualViewportSupported;
 }
+
+const skipDuplicates = whenDifferent => {
+	var previous = "_one_time_initial_";
+	return function (next) {
+		if (next !== previous) {
+			previous = next;
+			whenDifferent(next);
+		}
+	};
+};
 
 /**
  *
@@ -30,22 +34,18 @@ function subscribe(callback) {
 	}
 	
 	const
-		[ induceUnsubscribe, userUnsubscription ] = createAdapter(),
-		scheduler = newDefaultScheduler(),
-		
-		oskd = pipe(
-			map(evt => evt.target.height === window.innerHeight ? 'hidden' : 'visible'),
-			skipRepeats,
-			until(userUnsubscription),
-			tap(callback)
-		)(resize(window.visualViewport));
-		
-		runEffects(oskd, scheduler);
-		
-		return induceUnsubscribe;
+		nonRepeatingCallback = skipDuplicates(callback),
+	
+		onResize = evt => {
+			nonRepeatingCallback(evt.target.height === window.innerHeight ? 'hidden' : 'visible');
+		};
+	
+	visualViewport.addEventListener('resize', onResize);
+	
+	return function(){ visualViewport.removeEventListener('resize', onResize); };
 }
 
-export default {
+export {
 	subscribe,
 	isSupported
 };

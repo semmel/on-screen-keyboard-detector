@@ -16,5 +16,5 @@
 	"nonew": true,
 	"forin": true,
 	"shadow": "outer",
-	"predef": [ "require", "requirejs", "define", "AbortController", "customElements", "StreamMeGlobals", "ResizeObserver", "dictionary", "URLSearchParams"]
+	"predef": [ "require", "requirejs", "define", "AbortController", "customElements", "StreamMeGlobals", "ResizeObserver", "dictionary", "URLSearchParams", "visualViewport"]
 }

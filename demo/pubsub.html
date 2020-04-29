@@ -53,14 +53,14 @@
 }
 </script>
 <script type="module-shim">
-	import oskd from '../src/osk-detector.js';
+	import  {subscribe} from '../src/osk-detector.js';
 	import Emitter from './emittery.mjs';
 
 	const
 		emitter = new Emitter(),
 		outBox = document.querySelector('.outbox');
 
-	oskd.subscribe(visibility => emitter.emit(visibility));
+	subscribe(visibility => emitter.emit(visibility));
 
 	emitter.on('hidden', () => outBox.textContent += "hidden\n");
 	emitter.on('visible', () => outBox.textContent += "visible\n");
