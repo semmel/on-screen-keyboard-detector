@@ -8,19 +8,19 @@
 import { at, debounce, delay, empty, filter, join, map, merge, mergeArray, multicast, now, runEffects, scan, skipAfter, skipRepeats, snapshot, switchLatest, startWith, tap, until } from '@most/core';
 import { newDefaultScheduler } from '@most/scheduler';
 import { change, domEvent, focusin, focusout, resize } from '@most/dom-event';
-import { createAdapter } from '../node_modules/@most/adapter/dist/index.mjs';
-import always from 'ramda/always.js';
-import assoc from 'ramda/assoc.js';
-import applyTo from 'ramda/applyTo.js';
-import compose from 'ramda/compose.js';
-import curry from 'ramda/curry.js';
-import difference from 'ramda/difference.js';
-import equals from 'ramda/equals.js';
-import pipe from 'ramda/pipe.js';
-import isEmpty from 'ramda/isEmpty.js';
-import identical from 'ramda/identical.js';
-import keys from 'ramda/keys.js';
-import propEq from 'ramda/propEq.js';
+import { createAdapter } from '@most/adapter/dist/index.mjs';
+import always from 'ramda/src/always.js';
+import assoc from 'ramda/src/assoc.js';
+import applyTo from 'ramda/src/applyTo.js';
+import compose from 'ramda/src/compose.js';
+import curry from 'ramda/src/curry.js';
+import difference from 'ramda/src/difference.js';
+import equals from 'ramda/src/equals.js';
+import pipe from 'ramda/src/pipe.js';
+import isEmpty from 'ramda/src/isEmpty.js';
+import identical from 'ramda/src/identical.js';
+import keys from 'ramda/src/keys.js';
+import propEq from 'ramda/src/propEq.js';
 
 const
 	isiOS = /iPhone/.test(navigator.userAgent),
