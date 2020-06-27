@@ -18,6 +18,7 @@
   },
   "files": [
     "/dist",
+    "/src",
     "/doc/browser_viewports.png"
   ],
   "homepage": "https://github.com/semmel/on-screen-keyboard-detector#readme",
