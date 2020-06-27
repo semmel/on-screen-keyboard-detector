@@ -1,5 +1,6 @@
 import { terser } from "rollup-plugin-terser";
 import includePaths from 'rollup-plugin-includepaths';
+var importAlias = require('rollup-plugin-import-alias');
 
 const
 	packageConfig = require('./package.json'),
@@ -50,6 +51,7 @@ const
 				}
 			}
 		}),
+		
 		includePaths({
 			include: {
 				"@most/core": './node_modules/@most/core/dist/index.es.js',
@@ -57,21 +59,16 @@ const
 				"@most/prelude": "./node_modules/@most/prelude/dist/index.es.js",
 				"@most/disposable": "./node_modules/@most/disposable/dist/index.es.js",
 				"@most/dom-event": "./node_modules/@most/dom-event/dist/index.es.js",
-				"ramda/always.js": "./node_modules/ramda/es/always.js",
-				"ramda/assoc.js": "./node_modules/ramda/es/assoc.js",
-				"ramda/applyTo.js": "./node_modules/ramda/es/applyTo.js",
-				"ramda/compose.js": "./node_modules/ramda/es/compose.js",
-				"ramda/curry.js": "./node_modules/ramda/es/curry.js",
-				"ramda/difference.js": "./node_modules/ramda/es/difference.js",
-				"ramda/equals.js": "./node_modules/ramda/es/equals.js",
-				"ramda/pipe.js": "./node_modules/ramda/es/pipe.js",
-				"ramda/isEmpty.js": "./node_modules/ramda/es/isEmpty.js",
-				"ramda/identical.js": "./node_modules/ramda/es/identical.js",
-				"ramda/keys.js": "./node_modules/ramda/es/keys.js",
-				"ramda/propEq.js": "./node_modules/ramda/es/propEq.js"
+				"ramda": "./node_modules/ramda/es/index.js"
 			},
-			extensions: ['.js', '.mjs']
-		})
+			extensions: []
+		}),
+		importAlias({
+			Paths: {
+				"@most/adapter": "./node_modules/@most/adapter/dist/index.mjs"
+			},
+			Extensions: ['js', 'mjs']
+		}),
 	];
 
 const

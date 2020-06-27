@@ -2634,34 +2634,6 @@
   }
 
   /**
-   * Returns a function that always returns the given value. Note that for
-   * non-primitives the value returned is a reference to the original value.
-   *
-   * This function is known as `const`, `constant`, or `K` (for K combinator) in
-   * other languages and libraries.
-   *
-   * @func
-   * @memberOf R
-   * @since v0.1.0
-   * @category Function
-   * @sig a -> (* -> a)
-   * @param {*} val The value to wrap in a function
-   * @return {Function} A Function :: * -> val.
-   * @example
-   *
-   *      const t = R.always('Tee');
-   *      t(); //=> 'Tee'
-   */
-
-  var always =
-  /*#__PURE__*/
-  _curry1(function always(val) {
-    return function () {
-      return val;
-    };
-  });
-
-  /**
    * Optimized internal two-arity curry function.
    *
    * @private
@@ -2690,113 +2662,6 @@
       }
     };
   }
-
-  /**
-   * Optimized internal three-arity curry function.
-   *
-   * @private
-   * @category Function
-   * @param {Function} fn The function to curry.
-   * @return {Function} The curried function.
-   */
-
-  function _curry3(fn) {
-    return function f3(a, b, c) {
-      switch (arguments.length) {
-        case 0:
-          return f3;
-
-        case 1:
-          return _isPlaceholder(a) ? f3 : _curry2(function (_b, _c) {
-            return fn(a, _b, _c);
-          });
-
-        case 2:
-          return _isPlaceholder(a) && _isPlaceholder(b) ? f3 : _isPlaceholder(a) ? _curry2(function (_a, _c) {
-            return fn(_a, b, _c);
-          }) : _isPlaceholder(b) ? _curry2(function (_b, _c) {
-            return fn(a, _b, _c);
-          }) : _curry1(function (_c) {
-            return fn(a, b, _c);
-          });
-
-        default:
-          return _isPlaceholder(a) && _isPlaceholder(b) && _isPlaceholder(c) ? f3 : _isPlaceholder(a) && _isPlaceholder(b) ? _curry2(function (_a, _b) {
-            return fn(_a, _b, c);
-          }) : _isPlaceholder(a) && _isPlaceholder(c) ? _curry2(function (_a, _c) {
-            return fn(_a, b, _c);
-          }) : _isPlaceholder(b) && _isPlaceholder(c) ? _curry2(function (_b, _c) {
-            return fn(a, _b, _c);
-          }) : _isPlaceholder(a) ? _curry1(function (_a) {
-            return fn(_a, b, c);
-          }) : _isPlaceholder(b) ? _curry1(function (_b) {
-            return fn(a, _b, c);
-          }) : _isPlaceholder(c) ? _curry1(function (_c) {
-            return fn(a, b, _c);
-          }) : fn(a, b, c);
-      }
-    };
-  }
-
-  /**
-   * Makes a shallow clone of an object, setting or overriding the specified
-   * property with the given value. Note that this copies and flattens prototype
-   * properties onto the new object as well. All non-primitive properties are
-   * copied by reference.
-   *
-   * @func
-   * @memberOf R
-   * @since v0.8.0
-   * @category Object
-   * @sig String -> a -> {k: v} -> {k: v}
-   * @param {String} prop The property name to set
-   * @param {*} val The new value
-   * @param {Object} obj The object to clone
-   * @return {Object} A new object equivalent to the original except for the changed property.
-   * @see R.dissoc, R.pick
-   * @example
-   *
-   *      R.assoc('c', 3, {a: 1, b: 2}); //=> {a: 1, b: 2, c: 3}
-   */
-
-  var assoc =
-  /*#__PURE__*/
-  _curry3(function assoc(prop, val, obj) {
-    var result = {};
-
-    for (var p in obj) {
-      result[p] = obj[p];
-    }
-
-    result[prop] = val;
-    return result;
-  });
-
-  /**
-   * Takes a value and applies a function to it.
-   *
-   * This function is also known as the `thrush` combinator.
-   *
-   * @func
-   * @memberOf R
-   * @since v0.25.0
-   * @category Function
-   * @sig a -> (a -> b) -> b
-   * @param {*} x The value
-   * @param {Function} f The function to apply
-   * @return {*} The result of applying `f` to `x`
-   * @example
-   *
-   *      const t42 = R.applyTo(42);
-   *      t42(R.identity); //=> 42
-   *      t42(R.add(1)); //=> 43
-   */
-
-  var applyTo =
-  /*#__PURE__*/
-  _curry2(function applyTo(x, f) {
-    return f(x);
-  });
 
   function _arity(n, fn) {
     /* eslint-disable no-unused-vars */
@@ -2861,9 +2726,144 @@
     }
   }
 
-  function _pipe(f, g) {
+  /**
+   * Internal curryN function.
+   *
+   * @private
+   * @category Function
+   * @param {Number} length The arity of the curried function.
+   * @param {Array} received An array of arguments received thus far.
+   * @param {Function} fn The function to curry.
+   * @return {Function} The curried function.
+   */
+
+  function _curryN(length, received, fn) {
     return function () {
-      return g.call(this, f.apply(this, arguments));
+      var combined = [];
+      var argsIdx = 0;
+      var left = length;
+      var combinedIdx = 0;
+
+      while (combinedIdx < received.length || argsIdx < arguments.length) {
+        var result;
+
+        if (combinedIdx < received.length && (!_isPlaceholder(received[combinedIdx]) || argsIdx >= arguments.length)) {
+          result = received[combinedIdx];
+        } else {
+          result = arguments[argsIdx];
+          argsIdx += 1;
+        }
+
+        combined[combinedIdx] = result;
+
+        if (!_isPlaceholder(result)) {
+          left -= 1;
+        }
+
+        combinedIdx += 1;
+      }
+
+      return left <= 0 ? fn.apply(this, combined) : _arity(left, _curryN(length, combined, fn));
+    };
+  }
+
+  /**
+   * Returns a curried equivalent of the provided function, with the specified
+   * arity. The curried function has two unusual capabilities. First, its
+   * arguments needn't be provided one at a time. If `g` is `R.curryN(3, f)`, the
+   * following are equivalent:
+   *
+   *   - `g(1)(2)(3)`
+   *   - `g(1)(2, 3)`
+   *   - `g(1, 2)(3)`
+   *   - `g(1, 2, 3)`
+   *
+   * Secondly, the special placeholder value [`R.__`](#__) may be used to specify
+   * "gaps", allowing partial application of any combination of arguments,
+   * regardless of their positions. If `g` is as above and `_` is [`R.__`](#__),
+   * the following are equivalent:
+   *
+   *   - `g(1, 2, 3)`
+   *   - `g(_, 2, 3)(1)`
+   *   - `g(_, _, 3)(1)(2)`
+   *   - `g(_, _, 3)(1, 2)`
+   *   - `g(_, 2)(1)(3)`
+   *   - `g(_, 2)(1, 3)`
+   *   - `g(_, 2)(_, 3)(1)`
+   *
+   * @func
+   * @memberOf R
+   * @since v0.5.0
+   * @category Function
+   * @sig Number -> (* -> a) -> (* -> a)
+   * @param {Number} length The arity for the returned function.
+   * @param {Function} fn The function to curry.
+   * @return {Function} A new, curried function.
+   * @see R.curry
+   * @example
+   *
+   *      const sumArgs = (...args) => R.sum(args);
+   *
+   *      const curriedAddFourNumbers = R.curryN(4, sumArgs);
+   *      const f = curriedAddFourNumbers(1, 2);
+   *      const g = f(3);
+   *      g(4); //=> 10
+   */
+
+  var curryN =
+  /*#__PURE__*/
+  _curry2(function curryN(length, fn) {
+    if (length === 1) {
+      return _curry1(fn);
+    }
+
+    return _arity(length, _curryN(length, [], fn));
+  });
+
+  /**
+   * Optimized internal three-arity curry function.
+   *
+   * @private
+   * @category Function
+   * @param {Function} fn The function to curry.
+   * @return {Function} The curried function.
+   */
+
+  function _curry3(fn) {
+    return function f3(a, b, c) {
+      switch (arguments.length) {
+        case 0:
+          return f3;
+
+        case 1:
+          return _isPlaceholder(a) ? f3 : _curry2(function (_b, _c) {
+            return fn(a, _b, _c);
+          });
+
+        case 2:
+          return _isPlaceholder(a) && _isPlaceholder(b) ? f3 : _isPlaceholder(a) ? _curry2(function (_a, _c) {
+            return fn(_a, b, _c);
+          }) : _isPlaceholder(b) ? _curry2(function (_b, _c) {
+            return fn(a, _b, _c);
+          }) : _curry1(function (_c) {
+            return fn(a, b, _c);
+          });
+
+        default:
+          return _isPlaceholder(a) && _isPlaceholder(b) && _isPlaceholder(c) ? f3 : _isPlaceholder(a) && _isPlaceholder(b) ? _curry2(function (_a, _b) {
+            return fn(_a, _b, c);
+          }) : _isPlaceholder(a) && _isPlaceholder(c) ? _curry2(function (_a, _c) {
+            return fn(_a, b, _c);
+          }) : _isPlaceholder(b) && _isPlaceholder(c) ? _curry2(function (_b, _c) {
+            return fn(a, _b, _c);
+          }) : _isPlaceholder(a) ? _curry1(function (_a) {
+            return fn(_a, b, c);
+          }) : _isPlaceholder(b) ? _curry1(function (_b) {
+            return fn(a, _b, c);
+          }) : _isPlaceholder(c) ? _curry1(function (_c) {
+            return fn(a, b, _c);
+          }) : fn(a, b, c);
+      }
     };
   }
 
@@ -3064,6 +3064,108 @@
     throw new TypeError('reduce: list must be array or iterable');
   }
 
+  function _has(prop, obj) {
+    return Object.prototype.hasOwnProperty.call(obj, prop);
+  }
+
+  var toString = Object.prototype.toString;
+
+  var _isArguments =
+  /*#__PURE__*/
+  function () {
+    return toString.call(arguments) === '[object Arguments]' ? function _isArguments(x) {
+      return toString.call(x) === '[object Arguments]';
+    } : function _isArguments(x) {
+      return _has('callee', x);
+    };
+  }();
+
+  var hasEnumBug = !
+  /*#__PURE__*/
+  {
+    toString: null
+  }.propertyIsEnumerable('toString');
+  var nonEnumerableProps = ['constructor', 'valueOf', 'isPrototypeOf', 'toString', 'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString']; // Safari bug
+
+  var hasArgsEnumBug =
+  /*#__PURE__*/
+  function () {
+
+    return arguments.propertyIsEnumerable('length');
+  }();
+
+  var contains = function contains(list, item) {
+    var idx = 0;
+
+    while (idx < list.length) {
+      if (list[idx] === item) {
+        return true;
+      }
+
+      idx += 1;
+    }
+
+    return false;
+  };
+  /**
+   * Returns a list containing the names of all the enumerable own properties of
+   * the supplied object.
+   * Note that the order of the output array is not guaranteed to be consistent
+   * across different JS platforms.
+   *
+   * @func
+   * @memberOf R
+   * @since v0.1.0
+   * @category Object
+   * @sig {k: v} -> [k]
+   * @param {Object} obj The object to extract properties from
+   * @return {Array} An array of the object's own properties.
+   * @see R.keysIn, R.values
+   * @example
+   *
+   *      R.keys({a: 1, b: 2, c: 3}); //=> ['a', 'b', 'c']
+   */
+
+
+  var keys = typeof Object.keys === 'function' && !hasArgsEnumBug ?
+  /*#__PURE__*/
+  _curry1(function keys(obj) {
+    return Object(obj) !== obj ? [] : Object.keys(obj);
+  }) :
+  /*#__PURE__*/
+  _curry1(function keys(obj) {
+    if (Object(obj) !== obj) {
+      return [];
+    }
+
+    var prop, nIdx;
+    var ks = [];
+
+    var checkArgsLength = hasArgsEnumBug && _isArguments(obj);
+
+    for (prop in obj) {
+      if (_has(prop, obj) && (!checkArgsLength || prop !== 'length')) {
+        ks[ks.length] = prop;
+      }
+    }
+
+    if (hasEnumBug) {
+      nIdx = nonEnumerableProps.length - 1;
+
+      while (nIdx >= 0) {
+        prop = nonEnumerableProps[nIdx];
+
+        if (_has(prop, obj) && !contains(ks, prop)) {
+          ks[ks.length] = prop;
+        }
+
+        nIdx -= 1;
+      }
+    }
+
+    return ks;
+  });
+
   /**
    * Returns a single item by iterating through the list, successively calling
    * the iterator function and passing it an accumulator value and the current
@@ -3114,6 +3216,180 @@
   var reduce$1 =
   /*#__PURE__*/
   _curry3(_reduce);
+
+  /**
+   * Returns a function that always returns the given value. Note that for
+   * non-primitives the value returned is a reference to the original value.
+   *
+   * This function is known as `const`, `constant`, or `K` (for K combinator) in
+   * other languages and libraries.
+   *
+   * @func
+   * @memberOf R
+   * @since v0.1.0
+   * @category Function
+   * @sig a -> (* -> a)
+   * @param {*} val The value to wrap in a function
+   * @return {Function} A Function :: * -> val.
+   * @example
+   *
+   *      const t = R.always('Tee');
+   *      t(); //=> 'Tee'
+   */
+
+  var always =
+  /*#__PURE__*/
+  _curry1(function always(val) {
+    return function () {
+      return val;
+    };
+  });
+
+  /**
+   * Takes a value and applies a function to it.
+   *
+   * This function is also known as the `thrush` combinator.
+   *
+   * @func
+   * @memberOf R
+   * @since v0.25.0
+   * @category Function
+   * @sig a -> (a -> b) -> b
+   * @param {*} x The value
+   * @param {Function} f The function to apply
+   * @return {*} The result of applying `f` to `x`
+   * @example
+   *
+   *      const t42 = R.applyTo(42);
+   *      t42(R.identity); //=> 42
+   *      t42(R.add(1)); //=> 43
+   */
+
+  var applyTo =
+  /*#__PURE__*/
+  _curry2(function applyTo(x, f) {
+    return f(x);
+  });
+
+  /**
+   * Makes a shallow clone of an object, setting or overriding the specified
+   * property with the given value. Note that this copies and flattens prototype
+   * properties onto the new object as well. All non-primitive properties are
+   * copied by reference.
+   *
+   * @func
+   * @memberOf R
+   * @since v0.8.0
+   * @category Object
+   * @sig String -> a -> {k: v} -> {k: v}
+   * @param {String} prop The property name to set
+   * @param {*} val The new value
+   * @param {Object} obj The object to clone
+   * @return {Object} A new object equivalent to the original except for the changed property.
+   * @see R.dissoc, R.pick
+   * @example
+   *
+   *      R.assoc('c', 3, {a: 1, b: 2}); //=> {a: 1, b: 2, c: 3}
+   */
+
+  var assoc =
+  /*#__PURE__*/
+  _curry3(function assoc(prop, val, obj) {
+    var result = {};
+
+    for (var p in obj) {
+      result[p] = obj[p];
+    }
+
+    result[prop] = val;
+    return result;
+  });
+
+  /**
+   * Returns a curried equivalent of the provided function. The curried function
+   * has two unusual capabilities. First, its arguments needn't be provided one
+   * at a time. If `f` is a ternary function and `g` is `R.curry(f)`, the
+   * following are equivalent:
+   *
+   *   - `g(1)(2)(3)`
+   *   - `g(1)(2, 3)`
+   *   - `g(1, 2)(3)`
+   *   - `g(1, 2, 3)`
+   *
+   * Secondly, the special placeholder value [`R.__`](#__) may be used to specify
+   * "gaps", allowing partial application of any combination of arguments,
+   * regardless of their positions. If `g` is as above and `_` is [`R.__`](#__),
+   * the following are equivalent:
+   *
+   *   - `g(1, 2, 3)`
+   *   - `g(_, 2, 3)(1)`
+   *   - `g(_, _, 3)(1)(2)`
+   *   - `g(_, _, 3)(1, 2)`
+   *   - `g(_, 2)(1)(3)`
+   *   - `g(_, 2)(1, 3)`
+   *   - `g(_, 2)(_, 3)(1)`
+   *
+   * @func
+   * @memberOf R
+   * @since v0.1.0
+   * @category Function
+   * @sig (* -> a) -> (* -> a)
+   * @param {Function} fn The function to curry.
+   * @return {Function} A new, curried function.
+   * @see R.curryN, R.partial
+   * @example
+   *
+   *      const addFourNumbers = (a, b, c, d) => a + b + c + d;
+   *
+   *      const curriedAddFourNumbers = R.curry(addFourNumbers);
+   *      const f = curriedAddFourNumbers(1, 2);
+   *      const g = f(3);
+   *      g(4); //=> 10
+   */
+
+  var curry =
+  /*#__PURE__*/
+  _curry1(function curry(fn) {
+    return curryN(fn.length, fn);
+  });
+
+  /**
+   * Gives a single-word string description of the (native) type of a value,
+   * returning such answers as 'Object', 'Number', 'Array', or 'Null'. Does not
+   * attempt to distinguish user Object types any further, reporting them all as
+   * 'Object'.
+   *
+   * @func
+   * @memberOf R
+   * @since v0.8.0
+   * @category Type
+   * @sig (* -> {*}) -> String
+   * @param {*} val The value to test
+   * @return {String}
+   * @example
+   *
+   *      R.type({}); //=> "Object"
+   *      R.type(1); //=> "Number"
+   *      R.type(false); //=> "Boolean"
+   *      R.type('s'); //=> "String"
+   *      R.type(null); //=> "Null"
+   *      R.type([]); //=> "Array"
+   *      R.type(/[A-z]/); //=> "RegExp"
+   *      R.type(() => {}); //=> "Function"
+   *      R.type(undefined); //=> "Undefined"
+   */
+
+  var type =
+  /*#__PURE__*/
+  _curry1(function type(val) {
+    return val === null ? 'Null' : val === undefined ? 'Undefined' : Object.prototype.toString.call(val).slice(8, -1);
+  });
+
+  function _pipe(f, g) {
+    return function () {
+      return g.call(this, f.apply(this, arguments));
+    };
+  }
 
   /**
    * This checks whether a function has a [methodname] function. If it isn't an
@@ -3304,148 +3580,6 @@
     return pipe.apply(this, reverse(arguments));
   }
 
-  /**
-   * Internal curryN function.
-   *
-   * @private
-   * @category Function
-   * @param {Number} length The arity of the curried function.
-   * @param {Array} received An array of arguments received thus far.
-   * @param {Function} fn The function to curry.
-   * @return {Function} The curried function.
-   */
-
-  function _curryN(length, received, fn) {
-    return function () {
-      var combined = [];
-      var argsIdx = 0;
-      var left = length;
-      var combinedIdx = 0;
-
-      while (combinedIdx < received.length || argsIdx < arguments.length) {
-        var result;
-
-        if (combinedIdx < received.length && (!_isPlaceholder(received[combinedIdx]) || argsIdx >= arguments.length)) {
-          result = received[combinedIdx];
-        } else {
-          result = arguments[argsIdx];
-          argsIdx += 1;
-        }
-
-        combined[combinedIdx] = result;
-
-        if (!_isPlaceholder(result)) {
-          left -= 1;
-        }
-
-        combinedIdx += 1;
-      }
-
-      return left <= 0 ? fn.apply(this, combined) : _arity(left, _curryN(length, combined, fn));
-    };
-  }
-
-  /**
-   * Returns a curried equivalent of the provided function, with the specified
-   * arity. The curried function has two unusual capabilities. First, its
-   * arguments needn't be provided one at a time. If `g` is `R.curryN(3, f)`, the
-   * following are equivalent:
-   *
-   *   - `g(1)(2)(3)`
-   *   - `g(1)(2, 3)`
-   *   - `g(1, 2)(3)`
-   *   - `g(1, 2, 3)`
-   *
-   * Secondly, the special placeholder value [`R.__`](#__) may be used to specify
-   * "gaps", allowing partial application of any combination of arguments,
-   * regardless of their positions. If `g` is as above and `_` is [`R.__`](#__),
-   * the following are equivalent:
-   *
-   *   - `g(1, 2, 3)`
-   *   - `g(_, 2, 3)(1)`
-   *   - `g(_, _, 3)(1)(2)`
-   *   - `g(_, _, 3)(1, 2)`
-   *   - `g(_, 2)(1)(3)`
-   *   - `g(_, 2)(1, 3)`
-   *   - `g(_, 2)(_, 3)(1)`
-   *
-   * @func
-   * @memberOf R
-   * @since v0.5.0
-   * @category Function
-   * @sig Number -> (* -> a) -> (* -> a)
-   * @param {Number} length The arity for the returned function.
-   * @param {Function} fn The function to curry.
-   * @return {Function} A new, curried function.
-   * @see R.curry
-   * @example
-   *
-   *      const sumArgs = (...args) => R.sum(args);
-   *
-   *      const curriedAddFourNumbers = R.curryN(4, sumArgs);
-   *      const f = curriedAddFourNumbers(1, 2);
-   *      const g = f(3);
-   *      g(4); //=> 10
-   */
-
-  var curryN =
-  /*#__PURE__*/
-  _curry2(function curryN(length, fn) {
-    if (length === 1) {
-      return _curry1(fn);
-    }
-
-    return _arity(length, _curryN(length, [], fn));
-  });
-
-  /**
-   * Returns a curried equivalent of the provided function. The curried function
-   * has two unusual capabilities. First, its arguments needn't be provided one
-   * at a time. If `f` is a ternary function and `g` is `R.curry(f)`, the
-   * following are equivalent:
-   *
-   *   - `g(1)(2)(3)`
-   *   - `g(1)(2, 3)`
-   *   - `g(1, 2)(3)`
-   *   - `g(1, 2, 3)`
-   *
-   * Secondly, the special placeholder value [`R.__`](#__) may be used to specify
-   * "gaps", allowing partial application of any combination of arguments,
-   * regardless of their positions. If `g` is as above and `_` is [`R.__`](#__),
-   * the following are equivalent:
-   *
-   *   - `g(1, 2, 3)`
-   *   - `g(_, 2, 3)(1)`
-   *   - `g(_, _, 3)(1)(2)`
-   *   - `g(_, _, 3)(1, 2)`
-   *   - `g(_, 2)(1)(3)`
-   *   - `g(_, 2)(1, 3)`
-   *   - `g(_, 2)(_, 3)(1)`
-   *
-   * @func
-   * @memberOf R
-   * @since v0.1.0
-   * @category Function
-   * @sig (* -> a) -> (* -> a)
-   * @param {Function} fn The function to curry.
-   * @return {Function} A new, curried function.
-   * @see R.curryN, R.partial
-   * @example
-   *
-   *      const addFourNumbers = (a, b, c, d) => a + b + c + d;
-   *
-   *      const curriedAddFourNumbers = R.curry(addFourNumbers);
-   *      const f = curriedAddFourNumbers(1, 2);
-   *      const g = f(3);
-   *      g(4); //=> 10
-   */
-
-  var curry =
-  /*#__PURE__*/
-  _curry1(function curry(fn) {
-    return curryN(fn.length, fn);
-  });
-
   function _arrayFromIterator(iter) {
     var list = [];
     var next;
@@ -3478,10 +3612,6 @@
     return match == null ? '' : match[1];
   }
 
-  function _has(prop, obj) {
-    return Object.prototype.hasOwnProperty.call(obj, prop);
-  }
-
   // Based on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
   function _objectIs(a, b) {
     // SameValue algorithm
@@ -3496,136 +3626,6 @@
   }
 
   var _objectIs$1 = typeof Object.is === 'function' ? Object.is : _objectIs;
-
-  var toString = Object.prototype.toString;
-
-  var _isArguments =
-  /*#__PURE__*/
-  function () {
-    return toString.call(arguments) === '[object Arguments]' ? function _isArguments(x) {
-      return toString.call(x) === '[object Arguments]';
-    } : function _isArguments(x) {
-      return _has('callee', x);
-    };
-  }();
-
-  var hasEnumBug = !
-  /*#__PURE__*/
-  {
-    toString: null
-  }.propertyIsEnumerable('toString');
-  var nonEnumerableProps = ['constructor', 'valueOf', 'isPrototypeOf', 'toString', 'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString']; // Safari bug
-
-  var hasArgsEnumBug =
-  /*#__PURE__*/
-  function () {
-
-    return arguments.propertyIsEnumerable('length');
-  }();
-
-  var contains = function contains(list, item) {
-    var idx = 0;
-
-    while (idx < list.length) {
-      if (list[idx] === item) {
-        return true;
-      }
-
-      idx += 1;
-    }
-
-    return false;
-  };
-  /**
-   * Returns a list containing the names of all the enumerable own properties of
-   * the supplied object.
-   * Note that the order of the output array is not guaranteed to be consistent
-   * across different JS platforms.
-   *
-   * @func
-   * @memberOf R
-   * @since v0.1.0
-   * @category Object
-   * @sig {k: v} -> [k]
-   * @param {Object} obj The object to extract properties from
-   * @return {Array} An array of the object's own properties.
-   * @see R.keysIn, R.values
-   * @example
-   *
-   *      R.keys({a: 1, b: 2, c: 3}); //=> ['a', 'b', 'c']
-   */
-
-
-  var keys = typeof Object.keys === 'function' && !hasArgsEnumBug ?
-  /*#__PURE__*/
-  _curry1(function keys(obj) {
-    return Object(obj) !== obj ? [] : Object.keys(obj);
-  }) :
-  /*#__PURE__*/
-  _curry1(function keys(obj) {
-    if (Object(obj) !== obj) {
-      return [];
-    }
-
-    var prop, nIdx;
-    var ks = [];
-
-    var checkArgsLength = hasArgsEnumBug && _isArguments(obj);
-
-    for (prop in obj) {
-      if (_has(prop, obj) && (!checkArgsLength || prop !== 'length')) {
-        ks[ks.length] = prop;
-      }
-    }
-
-    if (hasEnumBug) {
-      nIdx = nonEnumerableProps.length - 1;
-
-      while (nIdx >= 0) {
-        prop = nonEnumerableProps[nIdx];
-
-        if (_has(prop, obj) && !contains(ks, prop)) {
-          ks[ks.length] = prop;
-        }
-
-        nIdx -= 1;
-      }
-    }
-
-    return ks;
-  });
-
-  /**
-   * Gives a single-word string description of the (native) type of a value,
-   * returning such answers as 'Object', 'Number', 'Array', or 'Null'. Does not
-   * attempt to distinguish user Object types any further, reporting them all as
-   * 'Object'.
-   *
-   * @func
-   * @memberOf R
-   * @since v0.8.0
-   * @category Type
-   * @sig (* -> {*}) -> String
-   * @param {*} val The value to test
-   * @return {String}
-   * @example
-   *
-   *      R.type({}); //=> "Object"
-   *      R.type(1); //=> "Number"
-   *      R.type(false); //=> "Boolean"
-   *      R.type('s'); //=> "String"
-   *      R.type(null); //=> "Null"
-   *      R.type([]); //=> "Array"
-   *      R.type(/[A-z]/); //=> "RegExp"
-   *      R.type(() => {}); //=> "Function"
-   *      R.type(undefined); //=> "Undefined"
-   */
-
-  var type =
-  /*#__PURE__*/
-  _curry1(function type(val) {
-    return val === null ? 'Null' : val === undefined ? 'Undefined' : Object.prototype.toString.call(val).slice(8, -1);
-  });
 
   /**
    * private _uniqContentEquals function.
@@ -3890,6 +3890,10 @@
     return _indexOf(list, a, 0) >= 0;
   }
 
+  function _isObject(x) {
+    return Object.prototype.toString.call(x) === '[object Object]';
+  }
+
   var _Set =
   /*#__PURE__*/
   function () {
@@ -4133,74 +4137,6 @@
   });
 
   /**
-   * Returns `true` if its arguments are equivalent, `false` otherwise. Handles
-   * cyclical data structures.
-   *
-   * Dispatches symmetrically to the `equals` methods of both arguments, if
-   * present.
-   *
-   * @func
-   * @memberOf R
-   * @since v0.15.0
-   * @category Relation
-   * @sig a -> b -> Boolean
-   * @param {*} a
-   * @param {*} b
-   * @return {Boolean}
-   * @example
-   *
-   *      R.equals(1, 1); //=> true
-   *      R.equals(1, '1'); //=> false
-   *      R.equals([1, 2, 3], [1, 2, 3]); //=> true
-   *
-   *      const a = {}; a.v = a;
-   *      const b = {}; b.v = b;
-   *      R.equals(a, b); //=> true
-   */
-
-  var equals$1 =
-  /*#__PURE__*/
-  _curry2(function equals(a, b) {
-    return _equals(a, b, [], []);
-  });
-
-  /**
-   * Performs left-to-right function composition. The first argument may have
-   * any arity; the remaining arguments must be unary.
-   *
-   * In some libraries this function is named `sequence`.
-   *
-   * **Note:** The result of pipe is not automatically curried.
-   *
-   * @func
-   * @memberOf R
-   * @since v0.1.0
-   * @category Function
-   * @sig (((a, b, ..., n) -> o), (o -> p), ..., (x -> y), (y -> z)) -> ((a, b, ..., n) -> z)
-   * @param {...Function} functions
-   * @return {Function}
-   * @see R.compose
-   * @example
-   *
-   *      const f = R.pipe(Math.pow, R.negate, R.inc);
-   *
-   *      f(3, 4); // -(3^4) + 1
-   * @symb R.pipe(f, g, h)(a, b) = h(g(f(a, b)))
-   */
-
-  function pipe$1() {
-    if (arguments.length === 0) {
-      throw new Error('pipe requires at least one argument');
-    }
-
-    return _arity(arguments[0].length, reduce$1(_pipe, arguments[0], tail(arguments)));
-  }
-
-  function _isObject(x) {
-    return Object.prototype.toString.call(x) === '[object Object]';
-  }
-
-  /**
    * Returns the empty value of its argument's type. Ramda defines the empty
    * value of Array (`[]`), Object (`{}`), String (`''`), and Arguments. Other
    * types are supported if they define `<Type>.empty`,
@@ -4234,34 +4170,6 @@
   });
 
   /**
-   * Returns `true` if the given value is its type's empty value; `false`
-   * otherwise.
-   *
-   * @func
-   * @memberOf R
-   * @since v0.1.0
-   * @category Logic
-   * @sig a -> Boolean
-   * @param {*} x
-   * @return {Boolean}
-   * @see R.empty
-   * @example
-   *
-   *      R.isEmpty([1, 2, 3]);   //=> false
-   *      R.isEmpty([]);          //=> true
-   *      R.isEmpty('');          //=> true
-   *      R.isEmpty(null);        //=> false
-   *      R.isEmpty({});          //=> true
-   *      R.isEmpty({length: 0}); //=> false
-   */
-
-  var isEmpty =
-  /*#__PURE__*/
-  _curry1(function isEmpty(x) {
-    return x != null && equals(x, empty$1(x));
-  });
-
-  /**
    * Returns true if its arguments are identical, false otherwise. Values are
    * identical if they reference the same memory. `NaN` is identical to `NaN`;
    * `0` and `-0` are not identical.
@@ -4291,90 +4199,32 @@
   /*#__PURE__*/
   _curry2(_objectIs$1);
 
-  var hasEnumBug$1 = !
-  /*#__PURE__*/
-  {
-    toString: null
-  }.propertyIsEnumerable('toString');
-  var nonEnumerableProps$1 = ['constructor', 'valueOf', 'isPrototypeOf', 'toString', 'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString']; // Safari bug
-
-  var hasArgsEnumBug$1 =
-  /*#__PURE__*/
-  function () {
-
-    return arguments.propertyIsEnumerable('length');
-  }();
-
-  var contains$1 = function contains(list, item) {
-    var idx = 0;
-
-    while (idx < list.length) {
-      if (list[idx] === item) {
-        return true;
-      }
-
-      idx += 1;
-    }
-
-    return false;
-  };
   /**
-   * Returns a list containing the names of all the enumerable own properties of
-   * the supplied object.
-   * Note that the order of the output array is not guaranteed to be consistent
-   * across different JS platforms.
+   * Returns `true` if the given value is its type's empty value; `false`
+   * otherwise.
    *
    * @func
    * @memberOf R
    * @since v0.1.0
-   * @category Object
-   * @sig {k: v} -> [k]
-   * @param {Object} obj The object to extract properties from
-   * @return {Array} An array of the object's own properties.
-   * @see R.keysIn, R.values
+   * @category Logic
+   * @sig a -> Boolean
+   * @param {*} x
+   * @return {Boolean}
+   * @see R.empty
    * @example
    *
-   *      R.keys({a: 1, b: 2, c: 3}); //=> ['a', 'b', 'c']
+   *      R.isEmpty([1, 2, 3]);   //=> false
+   *      R.isEmpty([]);          //=> true
+   *      R.isEmpty('');          //=> true
+   *      R.isEmpty(null);        //=> false
+   *      R.isEmpty({});          //=> true
+   *      R.isEmpty({length: 0}); //=> false
    */
 
-
-  var keys$1 = typeof Object.keys === 'function' && !hasArgsEnumBug$1 ?
+  var isEmpty =
   /*#__PURE__*/
-  _curry1(function keys(obj) {
-    return Object(obj) !== obj ? [] : Object.keys(obj);
-  }) :
-  /*#__PURE__*/
-  _curry1(function keys(obj) {
-    if (Object(obj) !== obj) {
-      return [];
-    }
-
-    var prop, nIdx;
-    var ks = [];
-
-    var checkArgsLength = hasArgsEnumBug$1 && _isArguments(obj);
-
-    for (prop in obj) {
-      if (_has(prop, obj) && (!checkArgsLength || prop !== 'length')) {
-        ks[ks.length] = prop;
-      }
-    }
-
-    if (hasEnumBug$1) {
-      nIdx = nonEnumerableProps$1.length - 1;
-
-      while (nIdx >= 0) {
-        prop = nonEnumerableProps$1[nIdx];
-
-        if (_has(prop, obj) && !contains$1(ks, prop)) {
-          ks[ks.length] = prop;
-        }
-
-        nIdx -= 1;
-      }
-    }
-
-    return ks;
+  _curry1(function isEmpty(x) {
+    return x != null && equals(x, empty$1(x));
   });
 
   /**
@@ -4511,13 +4361,13 @@
   			merge$$1(focusin(document.documentElement), focusout(document.documentElement)),
   		
   		documentVisibility =
-  			applyTo(domEvent('visibilitychange', document))(pipe$1(
+  			applyTo(domEvent('visibilitychange', document))(pipe(
   				map$1(() => document.visibilityState),
   				startWith$$1(document.visibilityState)
   			)),
   		
   		isUnfocused =
-  			applyTo(focus)(pipe$1(
+  			applyTo(focus)(pipe(
   				map$1(evt =>
   					evt.type === 'focusin' ? now(false) : at(INPUT_ELEMENT_FOCUS_JUMP_DELAY, true)
   				),
@@ -4528,7 +4378,7 @@
   			)),
   		
   		layoutHeightOnOSKFreeOrientationChange =
-  			applyTo(change(screen.orientation))(pipe$1(
+  			applyTo(change(screen.orientation))(pipe(
   				// The 'change' event hits very early BEFORE window.innerHeight is updated (e.g. on "resize")
   				snapshot$$1(
   					unfocused => unfocused || (window.innerHeight === initialLayoutHeight),
@@ -4542,7 +4392,7 @@
   			)),
   		
   		layoutHeightOnUnfocus =
-  			applyTo(isUnfocused)(pipe$1(
+  			applyTo(isUnfocused)(pipe(
   				filter$$1(identical(true)),
   				map$1(() => ({screenOrientation: getScreenOrientationType(), height: window.innerHeight}))
   			)),
@@ -4560,9 +4410,9 @@
   		layoutHeights =
   			// Ignores source streams while documentVisibility is 'hidden'
   			// sadly visibilitychange comes 1 sec after focusout!
-  			applyTo(mergeArray([layoutHeightOnUnfocus, layoutHeightOnOSKFreeOrientationChange]))(pipe$1(
+  			applyTo(mergeArray([layoutHeightOnUnfocus, layoutHeightOnOSKFreeOrientationChange]))(pipe(
   				delay$1(1000),
-  				rejectCapture(map$1(equals$1("hidden"), documentVisibility)),
+  				rejectCapture(map$1(equals("hidden"), documentVisibility)),
   				scan$$1(
   					(accHeights, {screenOrientation, height}) =>
   						assoc(screenOrientation, height, accHeights),
@@ -4570,11 +4420,11 @@
   						[getScreenOrientationType()]: window.innerHeight
   					}
   				),
-  				skipAfter$$1(compose$1(isEmpty, difference(['portrait', 'landscape']), keys$1))
+  				skipAfter$$1(compose$1(isEmpty, difference(['portrait', 'landscape']), keys))
   			)),
   		
   		layoutHeightOnVerticalResize =
-  			applyTo(resize(window))(pipe$1(
+  			applyTo(resize(window))(pipe(
   				debounce$$1(RESIZE_QUIET_PERIOD),
   				map$1(evt => ({ width: evt.target.innerWidth, height: evt.target.innerHeight})),
   				scan$$1(
@@ -4595,7 +4445,7 @@
   			)),
   		
   		osk =
-  			applyTo(layoutHeightOnVerticalResize)(pipe$1(
+  			applyTo(layoutHeightOnVerticalResize)(pipe(
   				delay$1(LAYOUT_RESIZE_TO_LAYOUT_HEIGHT_FIX_DELAY),
   				snapshot$$1(
   					(layoutHeightByOrientation, {height, dH}) => {
@@ -4615,7 +4465,7 @@
   					layoutHeights
   				),
   				join,
-  				merge$$1(applyTo(isUnfocused)(pipe$1(
+  				merge$$1(applyTo(isUnfocused)(pipe(
   					filter$$1(identical(true)),
   					map$1(always("hidden"))
   				))),
