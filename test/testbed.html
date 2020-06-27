@@ -38,11 +38,11 @@
 <input type="number" name="DN">
 <input type="time" name="ETime" >
 <script type="module">
-	import oskd from '../dist/oskd.mjs';
+	import {subscribe} from '../dist/oskd.mjs';
 
 	window.oskdEvents = [];
 
-	oskd(event => window.oskdEvents.push(event));
+	subscribe(event => window.oskdEvents.push(event));
 
 </script>
 </body>

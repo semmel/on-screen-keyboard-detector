@@ -33,9 +33,9 @@ Usage
 -----
 ### Basic
 ```javascript
-import oskd from 'on-screen-keyboard-detector';
+import { subscribe } from 'on-screen-keyboard-detector';
 
-const unsubscribe = oskd(visibility => {
+const unsubscribe = subscribe(visibility => {
 	if (visibility === "hidden"){
 		// ...
 	}
@@ -50,23 +50,32 @@ unsubscribe();
 
 API
 ---
-### oskd(listenerCallback)
+### subscribe(listenerCallback): unsubscribe
 Begins to observe browser events and invokes the provided callback function
 when a change in the keyboard visibility is detected.
 
-TODO: mention the parameters and the return value
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| callback  |`function(String)`| user-defined handler which receives the keyboard visibility changes |
+
+#### Return value
+`function(): void` : Unsubscribes to receive updates
+
+
+### isSupported()
+Returns `true` if the browser runtime supports oskd.
 
 Advanced Usage
 --------------
 ### Multiple Subscriptions (PubSub)
 PubSub is not part of this module and needs additional tools, e.g. [emittery][3]. See [`demo/pubsub.html`](./demo/pubsub.html)
 ```javascript
-import oskd from 'on-screen-keyboard-detector';
+import {subscribe} from 'on-screen-keyboard-detector';
 import Emitter from 'emittery';
 
 const emitter = new Emitter();
 
-oskd(visibility => emitter.emit(visibility));
+subscribe(visibility => emitter.emit(visibility));
 
 emitter.on('hidden', function() { /* ... */ });
 emitter.on('visible', function() { /* ... */ });

@@ -2,30 +2,18 @@
  * onscreen-keyboard-detector: osk-detector.js
  *
  * Created by Matthias Seemann on 21.03.2020.
- * Copyright (c) 2020 Visisoft OHG. All rights reserved.
  */
 
 import { at, debounce, delay, empty, filter, join, map, merge, mergeArray, multicast, now, runEffects, scan, skipAfter, skipRepeats, snapshot, switchLatest, startWith, tap, until } from '@most/core';
 import { newDefaultScheduler } from '@most/scheduler';
 import { change, domEvent, focusin, focusout, resize } from '@most/dom-event';
-import { createAdapter } from '../node_modules/@most/adapter/dist/index.mjs';
-import always from 'ramda/always.js';
-import assoc from 'ramda/assoc.js';
-import applyTo from 'ramda/applyTo.js';
-import compose from 'ramda/compose.js';
-import curry from 'ramda/curry.js';
-import difference from 'ramda/difference.js';
-import equals from 'ramda/equals.js';
-import pipe from 'ramda/pipe.js';
-import isEmpty from 'ramda/isEmpty.js';
-import identical from 'ramda/identical.js';
-import keys from 'ramda/keys.js';
-import propEq from 'ramda/propEq.js';
+import { createAdapter } from '@most/adapter';
+import {always, assoc, applyTo, compose, curry, difference, equals, pipe, isEmpty, identical, keys, propEq} from 'ramda';
+
+import {subscribe as subscribeOnIOS, isSupported as isSupportedOnIOS} from './oskd-ios.js';
 
 const
 	isiOS = /iPhone/.test(navigator.userAgent),
-	
-	isVisualViewportSupported = "visualViewport" in window,
 
 	getScreenOrientationType = () =>
 		screen.orientation.type.startsWith('portrait') ? 'portrait' : 'landscape',
@@ -35,6 +23,14 @@ const
 
 	isAnyElementActive = () => document.activeElement && (document.activeElement !== document.body);
 
+function isSupported() {
+	if (isiOS) {
+		return isSupportedOnIOS();
+	}
+	
+	return true;
+}
+
 /**
  *
  * @param {function(String)} userCallback
@@ -42,26 +38,8 @@ const
  */
 // initWithCallback :: (String -> *) -> (... -> undefined)
 function initWithCallback(userCallback) {
-	if (isiOS && !isVisualViewportSupported) {
-		throw new Error("On-Screen-Keyboard detection not supported on this version of iOS");
-	}
-	
-	const
-		[ induceUnsubscribe, userUnsubscription ] = createAdapter(),
-		scheduler = newDefaultScheduler();
-	
 	if(isiOS) {
-		const
-			iOS_OSK = pipe(
-				map(evt => evt.target.height === window.innerHeight ? 'hidden' : 'visible'),
-				skipRepeats,
-				until(userUnsubscription),
-				tap(userCallback)
-			)(resize(window.visualViewport));
-		
-		runEffects(iOS_OSK, scheduler);
-		
-		return induceUnsubscribe;
+		return subscribeOnIOS(userCallback);
 	}
 	
 	const
@@ -70,6 +48,9 @@ function initWithCallback(userCallback) {
 		RESIZE_QUIET_PERIOD = 500,
 		LAYOUT_RESIZE_TO_LAYOUT_HEIGHT_FIX_DELAY =
 			Math.max(INPUT_ELEMENT_FOCUS_JUMP_DELAY, SCREEN_ORIENTATION_TO_WINDOW_RESIZE_DELAY) - RESIZE_QUIET_PERIOD + 200,
+		
+		[ induceUnsubscribe, userUnsubscription ] = createAdapter(),
+		scheduler = newDefaultScheduler(),
 		
 		// assumes initially hidden OSK
 		initialLayoutHeight = window.innerHeight,
@@ -197,4 +178,7 @@ function initWithCallback(userCallback) {
 	return induceUnsubscribe;
 }
 
-export default initWithCallback;
+export {
+	initWithCallback as subscribe,
+	isSupported
+};
