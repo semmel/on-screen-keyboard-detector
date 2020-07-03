@@ -1,6 +1,9 @@
 Changelog
 =========
 
+### 2.0.1
+- added TypeScript types
+
 Version 2.0.0
 -------------
 ### Breaking

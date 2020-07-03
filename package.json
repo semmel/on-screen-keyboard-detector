@@ -49,5 +49,5 @@
     "test:chrome": "SELENIUM_BROWSER=chrome TEST_SERVER=http://192.168.7.171:8081 mocha test/simple_text_input.js",
     "test:ios": "SELENIUM_BROWSER=safari TEST_SERVER=http://192.168.7.171:8081 mocha test/simple_text_input.js"
   },
-  "version": "2.0.0"
+  "version": "2.0.1"
 }
