@@ -1,5 +1,5 @@
 /* @license
-	On-screen keyboard detector (OSKD) v.2.0.1
+	On-screen keyboard detector (OSKD) v.2.0.2
 	(c) 2020-2020 Matthias Seemann
 	OSKD may be freely distributed under the MIT license.
 */

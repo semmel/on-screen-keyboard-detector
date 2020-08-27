@@ -1,6 +1,9 @@
 Changelog
 =========
 
+### 2.0.2
+- added `types` field to `package.json` to reference TS definitions
+
 ### 2.0.1
 - added TypeScript types
 
