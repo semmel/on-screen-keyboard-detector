@@ -1,6 +1,5 @@
 import { terser } from "rollup-plugin-terser";
-import includePaths from 'rollup-plugin-includepaths';
-var importAlias = require('rollup-plugin-import-alias');
+import resolve from '@rollup/plugin-node-resolve';
 
 const
 	packageConfig = require('./package.json'),
@@ -52,23 +51,7 @@ const
 			}
 		}),
 		
-		includePaths({
-			include: {
-				"@most/core": './node_modules/@most/core/dist/index.es.js',
-				"@most/scheduler": "./node_modules/@most/scheduler/dist/index.es.js",
-				"@most/prelude": "./node_modules/@most/prelude/dist/index.es.js",
-				"@most/disposable": "./node_modules/@most/disposable/dist/index.es.js",
-				"@most/dom-event": "./node_modules/@most/dom-event/dist/index.es.js",
-				"ramda": "./node_modules/ramda/es/index.js"
-			},
-			extensions: []
-		}),
-		importAlias({
-			Paths: {
-				"@most/adapter": "./node_modules/@most/adapter/dist/index.mjs"
-			},
-			Extensions: ['js', 'mjs']
-		}),
+		resolve()
 	];
 
 const

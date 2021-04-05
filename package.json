@@ -13,15 +13,20 @@
   },
   "description": "Detects presence of the On-Screen-Keyboard in mobile browsers",
   "devDependencies": {
-    "es-module-shims": "^0.10.3",
-    "rollup-plugin-import-alias": "^1.0.10",
-    "rollup-plugin-includepaths": "^0.2.3"
+    "@rollup/plugin-node-resolve": "^11.2.1",
+    "es-module-shims": "^0.10.3"
   },
   "files": [
     "/dist",
     "/src",
     "/doc/browser_viewports.png"
   ],
+  "exports": {
+    ".": {
+      "require": "./dist/oskd.js",
+      "default": "./src/osk-detector.js"
+    }
+  },
   "homepage": "https://github.com/semmel/on-screen-keyboard-detector#readme",
   "keywords": [
     "keyboard",
@@ -34,7 +39,6 @@
   ],
   "license": "MIT",
   "main": "src/osk-detector.js",
-  "module": "./dist/oskd.mjs",
   "name": "on-screen-keyboard-detector",
   "peerDependencies": {
     "emittery": "^0.6.0"
@@ -51,6 +55,7 @@
     "test:chrome": "SELENIUM_BROWSER=chrome TEST_SERVER=http://192.168.7.171:8081 mocha test/simple_text_input.js",
     "test:ios": "SELENIUM_BROWSER=safari TEST_SERVER=http://192.168.7.171:8081 mocha test/simple_text_input.js"
   },
+  "type": "module",
   "types": "./src/osk-detector.d.ts",
-  "version": "2.0.3"
+  "version": "2.1.0"
 }
