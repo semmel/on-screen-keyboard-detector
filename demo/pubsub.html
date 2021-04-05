@@ -38,8 +38,8 @@
 <input type="number" name="DN">
 <input type="time" name="ETime" >
 <div class="outbox"></div>
-<script defer src="../node_modules/es-module-shims/dist/es-module-shims.js"></script>
-<script type="importmap-shim">
+<script src="../node_modules/es-module-shims/dist/es-module-shims.js"></script>
+<script type="importmap">
 {
 	"imports": {
 		"@most/core": "../node_modules/@most/core/dist/index.es.js",
@@ -52,20 +52,6 @@
 	}
 }
 </script>
-<script type="module-shim">
-	import  {subscribe} from '../src/osk-detector.js';
-	import Emitter from './emittery.mjs';
-
-	const
-		emitter = new Emitter(),
-		outBox = document.querySelector('.outbox');
-
-	subscribe(visibility => emitter.emit(visibility));
-
-	emitter.on('hidden', () => outBox.textContent += "hidden\n");
-	emitter.on('visible', () => outBox.textContent += "visible\n");
-
-
-</script>
+<script type="module" src="./pubsub.js"></script>
 </body>
 </html>
