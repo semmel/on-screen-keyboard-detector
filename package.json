@@ -33,6 +33,7 @@
   ],
   "license": "MIT",
   "main": "src/osk-detector.js",
+  "module": "./dist/oskd.mjs",
   "name": "on-screen-keyboard-detector",
   "peerDependencies": {
     "emittery": "^0.6.0"
@@ -50,5 +51,5 @@
     "test:ios": "SELENIUM_BROWSER=safari TEST_SERVER=http://192.168.7.171:8081 mocha test/simple_text_input.js"
   },
   "types": "./src/osk-detector.d.ts",
-  "version": "2.0.2"
+  "version": "2.0.3"
 }

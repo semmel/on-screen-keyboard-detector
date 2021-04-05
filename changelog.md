@@ -1,6 +1,9 @@
 Changelog
 =========
 
+### 2.0.3
+- fix(TypeScript): Just list both exported functions in the Typescript definitions, not the JS module used in the `dist` files. 
+
 ### 2.0.2
 - added `types` field to `package.json` to reference TS definitions
 
