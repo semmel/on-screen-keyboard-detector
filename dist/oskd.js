@@ -1,12 +1,12 @@
 /* @license
-	On-screen keyboard detector (OSKD) v.2.0.2
-	(c) 2020-2020 Matthias Seemann
+	On-screen keyboard detector (OSKD) v.2.0.3
+	(c) 2020-2021 Matthias Seemann
 	OSKD may be freely distributed under the MIT license.
 */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
-  (global = global || self, factory(global.OSKD = {}));
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.OSKD = {}));
 }(this, (function (exports) { 'use strict';
 
   /** @license MIT License (c) copyright 2010-2016 original author or authors */
