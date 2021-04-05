@@ -1,6 +1,15 @@
 Changelog
 =========
 
+### 2.1.0
+#### Breaking Change
+- Project now published as ES Module,
+- Aggregated (dependency-free) source bundles (CommonJS and ESM) are still provided in the `dist` folder.
+
+#### Other Changes
+- Updated some development and runtime dependencies
+
+
 ### 2.0.3
 - fix(TypeScript): Just list both exported functions in the Typescript definitions, not the JS module used in the `dist` files. 
 
