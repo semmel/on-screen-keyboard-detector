@@ -37,7 +37,15 @@ function subscribe(callback) {
 		nonRepeatingCallback = skipDuplicates(callback),
 	
 		onResize = evt => {
-			nonRepeatingCallback(evt.target.height === window.innerHeight ? 'hidden' : 'visible');
+			const relativeDifferenceBetweenInnerHeightAndViewportHeight =
+				(window.innerHeight - evt.target.height) / window.innerHeight;
+				
+			// account for the predictive text bar, showing on iPad with an external keyboard.
+ 			nonRepeatingCallback(
+				relativeDifferenceBetweenInnerHeightAndViewportHeight > 0.1 ?
+					'visible' :
+					'hidden'
+			);
 		};
 	
 	visualViewport.addEventListener('resize', onResize);

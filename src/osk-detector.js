@@ -13,7 +13,13 @@ import {always, assoc, applyTo, compose, curry, difference, equals, pipe, isEmpt
 import {subscribe as subscribeOnIOS, isSupported as isSupportedOnIOS} from './oskd-ios.js';
 
 const
-	isiOS = /iPhone/.test(navigator.userAgent),
+	userAgent = navigator.userAgent,
+	isTouchable = "ontouchend" in document,
+   isIPad = /\b(\w*Macintosh\w*)\b/.test(userAgent) && isTouchable,
+   isIPhone = /\b(\w*iPhone\w*)\b/.test(userAgent) &&
+            /\b(\w*Mobile\w*)\b/.test(userAgent) &&
+            isTouchable,
+	isIOS = isIPad || isIPhone,
 
 	getScreenOrientationType = () =>
 		screen.orientation.type.startsWith('portrait') ? 'portrait' : 'landscape',
@@ -24,11 +30,11 @@ const
 	isAnyElementActive = () => document.activeElement && (document.activeElement !== document.body);
 
 function isSupported() {
-	if (isiOS) {
+	if (isIOS) {
 		return isSupportedOnIOS();
 	}
 	
-	return true;
+	return isTouchable;
 }
 
 /**
@@ -38,7 +44,7 @@ function isSupported() {
  */
 // initWithCallback :: (String -> *) -> (... -> undefined)
 function initWithCallback(userCallback) {
-	if(isiOS) {
+	if(isIOS) {
 		return subscribeOnIOS(userCallback);
 	}
 	

@@ -1,5 +1,5 @@
 /* @license
-	On-screen keyboard detector (OSKD) v.2.1.0
+	On-screen keyboard detector (OSKD) v.2.2.0
 	(c) 2020-2021 Matthias Seemann
 	OSKD may be freely distributed under the MIT license.
 */
@@ -4078,7 +4078,15 @@
     		nonRepeatingCallback = skipDuplicates(callback),
     	
     		onResize = evt => {
-    			nonRepeatingCallback(evt.target.height === window.innerHeight ? 'hidden' : 'visible');
+    			const relativeDifferenceBetweenInnerHeightAndViewportHeight =
+    				(window.innerHeight - evt.target.height) / window.innerHeight;
+    				
+    			// account for the predictive text bar, showing on iPad with an external keyboard.
+     			nonRepeatingCallback(
+    				relativeDifferenceBetweenInnerHeightAndViewportHeight > 0.1 ?
+    					'visible' :
+    					'hidden'
+    			);
     		};
     	
     	visualViewport.addEventListener('resize', onResize);
@@ -4093,7 +4101,13 @@
      */
 
     const
-    	isiOS = /iPhone/.test(navigator.userAgent),
+    	userAgent = navigator.userAgent,
+    	isTouchable = "ontouchend" in document,
+       isIPad = /\b(\w*Macintosh\w*)\b/.test(userAgent) && isTouchable,
+       isIPhone = /\b(\w*iPhone\w*)\b/.test(userAgent) &&
+                /\b(\w*Mobile\w*)\b/.test(userAgent) &&
+                isTouchable,
+    	isIOS = isIPad || isIPhone,
 
     	getScreenOrientationType = () =>
     		screen.orientation.type.startsWith('portrait') ? 'portrait' : 'landscape',
@@ -4104,11 +4118,11 @@
     	isAnyElementActive = () => document.activeElement && (document.activeElement !== document.body);
 
     function isSupported$1() {
-    	if (isiOS) {
+    	if (isIOS) {
     		return isSupported();
     	}
     	
-    	return true;
+    	return isTouchable;
     }
 
     /**
@@ -4118,7 +4132,7 @@
      */
     // initWithCallback :: (String -> *) -> (... -> undefined)
     function initWithCallback(userCallback) {
-    	if(isiOS) {
+    	if(isIOS) {
     		return subscribe(userCallback);
     	}
     	

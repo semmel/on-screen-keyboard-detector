@@ -24,6 +24,9 @@ Limitations
 - On *Chrome for Android* the keyboard must be *initially hidden* when subscribing to the detector.
 - On *Chrome for Android* the `hidden` and `visible` events are dispatched with a approximate 1 second delay.
 - On *iOS* requires *Safari* v. ≥ 13
+- On iPad the predictive text bar, which is shown when an *external keyboard* is used, is *not* detected as `visible` keyboard.
+
+![iPad Predictive Text Bar](./doc/predictive-text-bar-ipad.png)
 
 Install
 -------
@@ -101,6 +104,16 @@ Then run `npm run test:chrome`.
 Connect a device where `Remote Automatation` is enabled for Safari (see the [Webkit blog][4]). Then run `npm run test:ios`
 
 **iOS tests should be performed manually (see the [demo](./demo) folder), because Webdriver controlled Mobile Safari does not show the virtual keyboard**
+
+Changelog
+---------
+### v2.2.0
+- `isSupported()` requires touch enabled screen
+- Support for Safari on iPad
+
+
+### v2.1.0
+- project is now an ES module
 
 
 
