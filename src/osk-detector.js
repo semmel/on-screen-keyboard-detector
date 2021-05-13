@@ -19,10 +19,11 @@ const
    isIPhone = /\b(\w*iPhone\w*)\b/.test(userAgent) &&
             /\b(\w*Mobile\w*)\b/.test(userAgent) &&
             isTouchable,
-	isIOS = isIPad || isIPhone,
+  isIOS = isIPad || isIPhone,
+  orientation = (screen.orientation || {}).type || screen.mozOrientation || screen.msOrientation,
 
 	getScreenOrientationType = () =>
-		screen.orientation && screen.orientation.type.startsWith('portrait') ? 'portrait' : 'landscape',
+		orientation && orientation.startsWith('portrait') ? 'portrait' : 'landscape',
 	
 	// rejectCapture :: Stream Boolean -> Stream a -> Stream a
 	rejectCapture = curry(compose(join, snapshot((valveValue, event) => valveValue ? empty() : now(event)))),
@@ -186,5 +187,6 @@ function initWithCallback(userCallback) {
 
 export {
 	initWithCallback as subscribe,
-	isSupported
+  isSupported,
+  orientation,
 };
