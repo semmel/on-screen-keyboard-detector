@@ -22,7 +22,7 @@ const
 	isIOS = isIPad || isIPhone,
 
 	getScreenOrientationType = () =>
-		screen.orientation.type.startsWith('portrait') ? 'portrait' : 'landscape',
+		screen.orientation && screen.orientation.type.startsWith('portrait') ? 'portrait' : 'landscape',
 	
 	// rejectCapture :: Stream Boolean -> Stream a -> Stream a
 	rejectCapture = curry(compose(join, snapshot((valveValue, event) => valveValue ? empty() : now(event)))),
