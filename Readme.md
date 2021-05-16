@@ -91,7 +91,7 @@ Tests
 - chai :tea:
 - selenium-webdriver
 - a Mac for Mobile Safari tests
-- running a local webserver (see `TEST_SERVER` in `package.json`)
+- running a local webserver (see `TEST_SERVER` in `package.json`), E.g. run [http-server](https://github.com/http-party/http-server) in the project root folder `http-server . --port 8081`
 
 ### Android
 For real devices make sure 
@@ -104,6 +104,10 @@ Then run `npm run test:chrome`.
 Connect a device where `Remote Automatation` is enabled for Safari (see the [Webkit blog][4]). Then run `npm run test:ios`
 
 **iOS tests should be performed manually (see the [demo](./demo) folder), because Webdriver controlled Mobile Safari does not show the virtual keyboard**
+
+Dependencies
+-----------
+[Ramda](https://ramdajs.com), and [Most](https://github.com/mostjs/core) for the reactive functional infrastructure.
 
 Changelog
 ---------
