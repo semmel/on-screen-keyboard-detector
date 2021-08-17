@@ -4,6 +4,14 @@
  * Created by Matthias Seemann on 28.04.2020.
  */
 
+import {pipe} from "ramda";
+import { resize, scroll } from '@most/dom-event';
+import {
+	debounce,  map as map_o, mergeArray as merge_all_o, runEffects, skipRepeats,
+	tap as tap_o, until} from "@most/core";
+import {createAdapter} from "@most/adapter";
+import {newDefaultScheduler} from "@most/scheduler";
+
 const
 	isVisualViewportSupported = "visualViewport" in window;
 
@@ -11,49 +19,44 @@ function isSupported() {
 	 return isVisualViewportSupported;
 }
 
-const skipDuplicates = whenDifferent => {
-	var previous = "_one_time_initial_";
-	return function (next) {
-		if (next !== previous) {
-			previous = next;
-			whenDifferent(next);
-		}
-	};
-};
-
 /**
  *
  * @param {function(String)} callback
  * @return {function(): void}
  */
 // initWithCallback :: (String -> *) -> (... -> undefined)
-function subscribe(callback) {
+function initWithCallback(callback) {
 	if (!isSupported()) {
 		console.warn("On-Screen-Keyboard detection not supported on this version of iOS");
 		return () => undefined;
 	}
 	
 	const
-		nonRepeatingCallback = skipDuplicates(callback),
+		[ induceUnsubscribe, userUnsubscription ] = createAdapter(),
+		scheduler = newDefaultScheduler(),
+		HEURISTIC_VIEWPORT_HEIGHT_CLIENT_HEIGHT_RATIO = 0.85,
+		
+		isKeyboardShown = pipe(
+			() => merge_all_o([
+				scroll(visualViewport),
+				resize(visualViewport),
+				scroll(window)
+			]),
+			debounce(200),
+			map_o(() =>
+				visualViewport.height * visualViewport.scale / document.documentElement.clientHeight < HEURISTIC_VIEWPORT_HEIGHT_CLIENT_HEIGHT_RATIO
+			),
+			skipRepeats,
+			map_o(isShown => isShown ? "visible" : "hidden"),
+			until(userUnsubscription)
+		)();
 	
-		onResize = evt => {
-			const relativeDifferenceBetweenInnerHeightAndViewportHeight =
-				(window.innerHeight - evt.target.height) / window.innerHeight;
-				
-			// account for the predictive text bar, showing on iPad with an external keyboard.
- 			nonRepeatingCallback(
-				relativeDifferenceBetweenInnerHeightAndViewportHeight > 0.1 ?
-					'visible' :
-					'hidden'
-			);
-		};
+	runEffects(tap_o(callback, isKeyboardShown), scheduler);
 	
-	visualViewport.addEventListener('resize', onResize);
-	
-	return function(){ visualViewport.removeEventListener('resize', onResize); };
+	return induceUnsubscribe;
 }
 
 export {
-	subscribe,
+	initWithCallback as subscribe,
 	isSupported
 };

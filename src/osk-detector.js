@@ -62,6 +62,9 @@ function initWithCallback(userCallback) {
 		initialLayoutHeight = window.innerHeight,
 		// assumes initially hidden OSK
 		approximateBrowserToolbarHeight = screen.availHeight - window.innerHeight,
+		// Implementation note:
+		// On Chrome window.outerHeight changes together with window.innerHeight
+		// They seem to be always equal to each other.
 		
 		focus =
 			merge(focusin(document.documentElement), focusout(document.documentElement)),

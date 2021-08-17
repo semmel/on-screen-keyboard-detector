@@ -8,11 +8,11 @@ On-screen keyboard detector
 
 Background
 ----------
-This approach employs the browsers layout and visual viewports ([Article on MDN][1], [Demo][2]) to 
+This approach employs the browsers layout and visual viewports ([Explainer][5], [MDN][1], [Demo][2]) to 
 observe the appearance of the virtual keyboard. 
 
-At the time of writing on 
-- *Mobile Safari* the keyboard is excluded from the visual viewport, while on
+Simplified, since it's introduction 
+- *Mobile Safari* excludes the keyboard from the visual viewport, while
 - *Chrome for Android* the keyboard is excluded from both the visual and the layout viewport.
 
 ![Browser Viewports](./doc/browser_viewports.png)
@@ -36,19 +36,21 @@ Usage
 -----
 ### Basic
 ```javascript
-import { subscribe } from 'on-screen-keyboard-detector';
+import { subscribe, isSupported } from 'on-screen-keyboard-detector';
 
-const unsubscribe = subscribe(visibility => {
-	if (visibility === "hidden"){
-		// ...
-	}
-	else { // visibility === "visible"
-		// ...
-	}
-});
-
-// After calling unsubscribe() the callback will no longer be invoked.
-unsubscribe();
+if (isSupported()) {
+	const unsubscribe = subscribe(visibility => {
+		if (visibility === "hidden") {
+			// ...
+		}
+		else { // visibility === "visible"
+			// ...
+		}
+	});
+	
+	// After calling unsubscribe() the callback will no longer be invoked.
+   unsubscribe();
+}
 ```
 
 API
@@ -109,19 +111,11 @@ Dependencies
 -----------
 [Ramda](https://ramdajs.com), and [Most](https://github.com/mostjs/core) for the reactive functional infrastructure.
 
-Changelog
+Changelog (See changelog.md)
 ---------
-### v2.2.0
-- `isSupported()` requires touch enabled screen
-- Support for Safari on iPad
-
-
-### v2.1.0
-- project is now an ES module
-
-
 
 [1]: https://developer.mozilla.org/en-US/docs/Web/API/Visual_Viewport_API
 [2]: http://bokand.github.io/viewport/index.html
 [3]: https://github.com/sindresorhus/emittery
 [4]: https://webkit.org/blog/9395/webdriver-is-coming-to-safari-in-ios-13/
+[5]: https://github.com/bokand/bokand.github.io/blob/master/web_viewports_explainer.md

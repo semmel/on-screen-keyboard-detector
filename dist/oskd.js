@@ -2321,6 +2321,11 @@
 
       return domEvent('resize', node, capture);
     };
+    var scroll = function (node, capture) {
+      if ( capture === void 0 ) capture = false;
+
+      return domEvent('scroll', node, capture);
+    };
 
     var DomEvent = function DomEvent (event, node, capture) {
       this.event = event;
@@ -4052,46 +4057,38 @@
     	 return isVisualViewportSupported;
     }
 
-    const skipDuplicates = whenDifferent => {
-    	var previous = "_one_time_initial_";
-    	return function (next) {
-    		if (next !== previous) {
-    			previous = next;
-    			whenDifferent(next);
-    		}
-    	};
-    };
-
     /**
      *
      * @param {function(String)} callback
      * @return {function(): void}
      */
     // initWithCallback :: (String -> *) -> (... -> undefined)
-    function subscribe(callback) {
+    function initWithCallback(callback) {
     	if (!isSupported()) {
     		console.warn("On-Screen-Keyboard detection not supported on this version of iOS");
     		return () => undefined;
     	}
     	
     	const
-    		nonRepeatingCallback = skipDuplicates(callback),
+    		[ induceUnsubscribe, userUnsubscription ] = createAdapter(),
+    		scheduler = newDefaultScheduler(),
+    		HEURISTIC_VIEWPORT_HEIGHT_CLIENT_HEIGHT_RATIO = 0.85,
+    		
+    		isKeyboardShown = pipe(
+    			() => merge$1$1(scroll(visualViewport), resize(visualViewport)),
+    			debounce$1(100),
+    			map$1$1(() =>
+    				visualViewport.height * visualViewport.scale / document.documentElement.clientHeight < HEURISTIC_VIEWPORT_HEIGHT_CLIENT_HEIGHT_RATIO
+    			),
+    			skipRepeats,
+    			debounce$1(200),
+    			map$1$1(isShown => isShown ? "visible" : "hidden"),
+    			until$1(userUnsubscription)
+    		)();
     	
-    		onResize = evt => {
-    			const relativeDifferenceBetweenInnerHeightAndViewportHeight =
-    				(window.innerHeight - evt.target.height) / window.innerHeight;
-    				
-    			// account for the predictive text bar, showing on iPad with an external keyboard.
-     			nonRepeatingCallback(
-    				relativeDifferenceBetweenInnerHeightAndViewportHeight > 0.1 ?
-    					'visible' :
-    					'hidden'
-    			);
-    		};
+    	runEffects(tap$1(callback, isKeyboardShown), scheduler);
     	
-    	visualViewport.addEventListener('resize', onResize);
-    	
-    	return function(){ visualViewport.removeEventListener('resize', onResize); };
+    	return induceUnsubscribe;
     }
 
     /**
@@ -4131,9 +4128,9 @@
      * @return {function(): void}
      */
     // initWithCallback :: (String -> *) -> (... -> undefined)
-    function initWithCallback(userCallback) {
+    function initWithCallback$1(userCallback) {
     	if(isIOS) {
-    		return subscribe(userCallback);
+    		return initWithCallback(userCallback);
     	}
     	
     	const
@@ -4150,6 +4147,9 @@
     		initialLayoutHeight = window.innerHeight,
     		// assumes initially hidden OSK
     		approximateBrowserToolbarHeight = screen.availHeight - window.innerHeight,
+    		// Implementation note:
+    		// On Chrome window.outerHeight changes together with window.innerHeight
+    		// They seem to be always equal to each other.
     		
     		focus =
     			merge$1$1(focusin(document.documentElement), focusout(document.documentElement)),
@@ -4273,7 +4273,7 @@
     }
 
     exports.isSupported = isSupported$1;
-    exports.subscribe = initWithCallback;
+    exports.subscribe = initWithCallback$1;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

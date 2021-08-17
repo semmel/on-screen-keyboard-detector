@@ -13,8 +13,8 @@
   },
   "description": "Detects presence of the On-Screen-Keyboard in mobile browsers",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^11.2.1",
-    "es-module-shims": "^0.10.3"
+    "@rollup/plugin-node-resolve": "^13.0.4",
+    "es-module-shims": "^0.12.2"
   },
   "files": [
     "/dist",
