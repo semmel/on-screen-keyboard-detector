@@ -4,7 +4,7 @@
 
 On-screen keyboard detector
 =============================
-> Detects the presence of the on-screen keyboard (OSK) shown by mobile browsers when the user interacts with input controls on a webpage.
+> Indirect detection of the presence of the on-screen keyboard (OSK) shown by mobile browsers when the user interacts with input controls on a webpage.
 
 Background
 ----------
@@ -21,12 +21,16 @@ Simplified, since it's introduction
 
 Limitations
 ------
+The indirect detection relying on viewport and window DOM events brings some limitations:
+
+- `hidden` and `visible` events are dispatched with a approximate 1 second delay.
 - On *Chrome for Android* the keyboard must be *initially hidden* when subscribing to the detector.
-- On *Chrome for Android* the `hidden` and `visible` events are dispatched with a approximate 1 second delay.
 - On *iOS* requires *Safari* v. ≥ 13
 - On iPad the predictive text bar, which is shown when an *external keyboard* is used, is *not* detected as `visible` keyboard.
 
 ![iPad Predictive Text Bar](./doc/predictive-text-bar-ipad.png)
+
+Because of these caveats, the straight-forward way of detecting `blur` and `focus` events on inputs should be explored before falling back on this project. 
 
 Install
 -------

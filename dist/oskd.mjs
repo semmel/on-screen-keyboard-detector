@@ -1,5 +1,5 @@
 /* @license
-	On-screen keyboard detector (OSKD) v.2.2.0
+	On-screen keyboard detector (OSKD) v.2.3.0
 	(c) 2020-2021 Matthias Seemann
 	OSKD may be freely distributed under the MIT license.
 */
@@ -4069,13 +4069,17 @@ function initWithCallback(callback) {
 		HEURISTIC_VIEWPORT_HEIGHT_CLIENT_HEIGHT_RATIO = 0.85,
 		
 		isKeyboardShown = pipe(
-			() => merge$1$1(scroll(visualViewport), resize(visualViewport)),
-			debounce$1(100),
+			() => mergeArray([
+				scroll(visualViewport),
+				resize(visualViewport),
+				scroll(window)
+			]),
+			debounce$1(800),
+			tap$1(() => { console.log(visualViewport.height * visualViewport.scale / document.documentElement.clientHeight); }),
 			map$1$1(() =>
 				visualViewport.height * visualViewport.scale / document.documentElement.clientHeight < HEURISTIC_VIEWPORT_HEIGHT_CLIENT_HEIGHT_RATIO
 			),
 			skipRepeats,
-			debounce$1(200),
 			map$1$1(isShown => isShown ? "visible" : "hidden"),
 			until$1(userUnsubscription)
 		)();

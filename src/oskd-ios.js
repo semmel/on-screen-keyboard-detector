@@ -42,7 +42,8 @@ function initWithCallback(callback) {
 				resize(visualViewport),
 				scroll(window)
 			]),
-			debounce(200),
+			debounce(800),
+			tap_o(() => { console.log(visualViewport.height * visualViewport.scale / document.documentElement.clientHeight); }),
 			map_o(() =>
 				visualViewport.height * visualViewport.scale / document.documentElement.clientHeight < HEURISTIC_VIEWPORT_HEIGHT_CLIENT_HEIGHT_RATIO
 			),

@@ -2,11 +2,10 @@ Changelog
 =========
 
 ### v2.3
-#### new implementation for iOS
-- takes pinch-zoom factor into account,
-- no longer uses `window.innerHeight` for the layout viewport, but `documentElement.clientHeight` (fixes false `hidden` event when the keyboard is shown, but the page scrolled to the bottom).
-- events occur with 0.3 seconds delay
-
+#### iOS
+- pinch-zoom factor into account,
+- new implementation no longer uses `window.innerHeight` for the layout viewport, but `documentElement.clientHeight` (fixes false `hidden` event when the keyboard is shown, but the page scrolled to the bottom).
+- events occur with 0.8 seconds delay
 
 ### v2.2.0
 - `isSupported()` requires touch enabled screen
