@@ -12,11 +12,8 @@ import {
 import {createAdapter} from "@most/adapter";
 import {newDefaultScheduler} from "@most/scheduler";
 
-const
-	isVisualViewportSupported = "visualViewport" in window;
-
 function isSupported() {
-	 return isVisualViewportSupported;
+	 return "visualViewport" in window;
 }
 
 /**
