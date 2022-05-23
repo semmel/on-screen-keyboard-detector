@@ -13,7 +13,7 @@ import {createAdapter} from "@most/adapter";
 import {newDefaultScheduler} from "@most/scheduler";
 
 function isSupported() {
-	 return "visualViewport" in window;
+	return "visualViewport" in window;
 }
 
 /**
@@ -27,12 +27,12 @@ function initWithCallback(callback) {
 		console.warn("On-Screen-Keyboard detection not supported on this version of iOS");
 		return () => undefined;
 	}
-	
+
 	const
 		[ induceUnsubscribe, userUnsubscription ] = createAdapter(),
 		scheduler = newDefaultScheduler(),
 		HEURISTIC_VIEWPORT_HEIGHT_CLIENT_HEIGHT_RATIO = 0.85,
-		
+
 		isKeyboardShown = pipe(
 			() => merge_all_o([
 				scroll(visualViewport),
@@ -48,9 +48,9 @@ function initWithCallback(callback) {
 			map_o(isShown => isShown ? "visible" : "hidden"),
 			until(userUnsubscription)
 		)();
-	
+
 	runEffects(tap_o(callback, isKeyboardShown), scheduler);
-	
+
 	return induceUnsubscribe;
 }
 

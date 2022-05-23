@@ -13,13 +13,29 @@ import {always, assoc, applyTo, compose, curry, difference, equals, pipe, isEmpt
 import {subscribe as subscribeOnIOS, isSupported as isSupportedOnIOS} from './oskd-ios.js';
 
 
+function getUserAgentProps(){
+	const
+		userAgent = navigator.userAgent,
+		isTouchable = "ontouchend" in document,
+		isIPad = /\b(\w*Macintosh\w*)\b/.test(userAgent) && isTouchable,
+		isIPhone = /\b(\w*iPhone\w*)\b/.test(userAgent) &&
+			/\b(\w*Mobile\w*)\b/.test(userAgent) &&
+			isTouchable,
+		isIOS = isIPad || isIPhone;
+
+	return {
+		isTouchable,
+		isIOS
+	};
+}
 
 function isSupported() {
-	const isTouchable = "ontouchend" in document;
+	const {isIOS, isTouchable} = getUserAgentProps();
+
 	if (isIOS) {
 		return isSupportedOnIOS();
 	}
-	
+
 	return isTouchable;
 }
 
@@ -30,15 +46,8 @@ function isSupported() {
  */
 // initWithCallback :: (String -> *) -> (... -> undefined)
 function initWithCallback(userCallback) {
+	const {isIOS} = getUserAgentProps();
 	const
-		userAgent = navigator.userAgent,
-		isTouchable = "ontouchend" in document,
-		isIPad = /\b(\w*Macintosh\w*)\b/.test(userAgent) && isTouchable,
-		isIPhone = /\b(\w*iPhone\w*)\b/.test(userAgent) &&
-			/\b(\w*Mobile\w*)\b/.test(userAgent) &&
-			isTouchable,
-		isIOS = isIPad || isIPhone,
-
 		getScreenOrientationType = () =>
 			screen.orientation.type.startsWith('portrait') ? 'portrait' : 'landscape',
 
@@ -50,17 +59,17 @@ function initWithCallback(userCallback) {
 	if(isIOS) {
 		return subscribeOnIOS(userCallback);
 	}
-	
+
 	const
 		INPUT_ELEMENT_FOCUS_JUMP_DELAY = 700,
 		SCREEN_ORIENTATION_TO_WINDOW_RESIZE_DELAY = 700,
 		RESIZE_QUIET_PERIOD = 500,
 		LAYOUT_RESIZE_TO_LAYOUT_HEIGHT_FIX_DELAY =
 			Math.max(INPUT_ELEMENT_FOCUS_JUMP_DELAY, SCREEN_ORIENTATION_TO_WINDOW_RESIZE_DELAY) - RESIZE_QUIET_PERIOD + 200,
-		
+
 		[ induceUnsubscribe, userUnsubscription ] = createAdapter(),
 		scheduler = newDefaultScheduler(),
-		
+
 		// assumes initially hidden OSK
 		initialLayoutHeight = window.innerHeight,
 		// assumes initially hidden OSK
@@ -68,16 +77,16 @@ function initWithCallback(userCallback) {
 		// Implementation note:
 		// On Chrome window.outerHeight changes together with window.innerHeight
 		// They seem to be always equal to each other.
-		
+
 		focus =
 			merge(focusin(document.documentElement), focusout(document.documentElement)),
-		
+
 		documentVisibility =
 			applyTo(domEvent('visibilitychange', document))(pipe(
 				map(() => document.visibilityState),
 				startWith(document.visibilityState)
 			)),
-		
+
 		isUnfocused =
 			applyTo(focus)(pipe(
 				map(evt =>
@@ -88,7 +97,7 @@ function initWithCallback(userCallback) {
 				skipRepeats,
 				multicast
 			)),
-		
+
 		layoutHeightOnOSKFreeOrientationChange =
 			applyTo(change(screen.orientation))(pipe(
 				// The 'change' event hits very early BEFORE window.innerHeight is updated (e.g. on "resize")
@@ -102,20 +111,20 @@ function initWithCallback(userCallback) {
 					height: isOSKFree ? window.innerHeight : screen.availHeight - approximateBrowserToolbarHeight
 				}))
 			)),
-		
+
 		layoutHeightOnUnfocus =
 			applyTo(isUnfocused)(pipe(
 				filter(identical(true)),
 				map(() => ({screenOrientation: getScreenOrientationType(), height: window.innerHeight}))
 			)),
-		
+
 		// Difficulties: The exact layout height in the perpendicular orientation is only to determine on orientation change,
 		// Orientation change can happen:
 		// - entirely unfocused,
 		// - focused but w/o OSK, or
 		// - with OSK.
 		// Thus on arriving in the new orientation, until complete unfocus, it is uncertain what the current window.innerHeight value means
-		
+
 		// Solution?: Assume initially hidden OSK (even if any input has the "autofocus" attribute),
 		// and initialize other dimension with screen.availWidth
 		// so there can always be made a decision on the keyboard.
@@ -134,7 +143,7 @@ function initWithCallback(userCallback) {
 				),
 				skipAfter(compose(isEmpty, difference(['portrait', 'landscape']), keys))
 			)),
-		
+
 		layoutHeightOnVerticalResize =
 			applyTo(resize(window))(pipe(
 				debounce(RESIZE_QUIET_PERIOD),
@@ -155,7 +164,7 @@ function initWithCallback(userCallback) {
 				),
 				filter(propEq('isJustHeightResize', true))
 			)),
-		
+
 		osk =
 			applyTo(layoutHeightOnVerticalResize)(pipe(
 				delay(LAYOUT_RESIZE_TO_LAYOUT_HEIGHT_FIX_DELAY),
@@ -163,16 +172,16 @@ function initWithCallback(userCallback) {
 					(layoutHeightByOrientation, {height, dH}) => {
 						const
 							nonOSKLayoutHeight = layoutHeightByOrientation[getScreenOrientationType()];
-						
+
 						if (!nonOSKLayoutHeight) {
 							return (dH > 0.1 * screen.availHeight) ? now("hidden")
 								: (dH < -0.1 * screen.availHeight) ? now("visible")
 									: empty();
 						}
-						
+
 						return (height < 0.9 * nonOSKLayoutHeight) && (dH < 0) ? now("visible")
 							: (height === nonOSKLayoutHeight) && (dH > 0) ? now("hidden")
-							: empty();
+								: empty();
 					},
 					layoutHeights
 				),
@@ -184,9 +193,9 @@ function initWithCallback(userCallback) {
 				until(userUnsubscription),
 				skipRepeats
 			));
-	
+
 	runEffects(tap(userCallback, osk), scheduler);
-	
+
 	return induceUnsubscribe;
 }
 
