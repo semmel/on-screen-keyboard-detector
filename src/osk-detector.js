@@ -12,24 +12,10 @@ import {always, assoc, applyTo, compose, curry, difference, equals, pipe, isEmpt
 
 import {subscribe as subscribeOnIOS, isSupported as isSupportedOnIOS} from './oskd-ios.js';
 
-const
-	userAgent = navigator.userAgent,
-	isTouchable = "ontouchend" in document,
-   isIPad = /\b(\w*Macintosh\w*)\b/.test(userAgent) && isTouchable,
-   isIPhone = /\b(\w*iPhone\w*)\b/.test(userAgent) &&
-            /\b(\w*Mobile\w*)\b/.test(userAgent) &&
-            isTouchable,
-	isIOS = isIPad || isIPhone,
 
-	getScreenOrientationType = () =>
-		screen.orientation.type.startsWith('portrait') ? 'portrait' : 'landscape',
-	
-	// rejectCapture :: Stream Boolean -> Stream a -> Stream a
-	rejectCapture = curry(compose(join, snapshot((valveValue, event) => valveValue ? empty() : now(event)))),
-
-	isAnyElementActive = () => document.activeElement && (document.activeElement !== document.body);
 
 function isSupported() {
+	const isTouchable = "ontouchend" in document;
 	if (isIOS) {
 		return isSupportedOnIOS();
 	}
@@ -44,6 +30,23 @@ function isSupported() {
  */
 // initWithCallback :: (String -> *) -> (... -> undefined)
 function initWithCallback(userCallback) {
+	const
+		userAgent = navigator.userAgent,
+		isTouchable = "ontouchend" in document,
+		isIPad = /\b(\w*Macintosh\w*)\b/.test(userAgent) && isTouchable,
+		isIPhone = /\b(\w*iPhone\w*)\b/.test(userAgent) &&
+			/\b(\w*Mobile\w*)\b/.test(userAgent) &&
+			isTouchable,
+		isIOS = isIPad || isIPhone,
+
+		getScreenOrientationType = () =>
+			screen.orientation.type.startsWith('portrait') ? 'portrait' : 'landscape',
+
+		// rejectCapture :: Stream Boolean -> Stream a -> Stream a
+		rejectCapture = curry(compose(join, snapshot((valveValue, event) => valveValue ? empty() : now(event)))),
+
+		isAnyElementActive = () => document.activeElement && (document.activeElement !== document.body);
+
 	if(isIOS) {
 		return subscribeOnIOS(userCallback);
 	}
