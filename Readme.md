@@ -1,10 +1,15 @@
 [![NPM Version](https://img.shields.io/npm/v/on-screen-keyboard-detector.svg?style=flat-square)](https://www.npmjs.com/package/on-screen-keyboard-detector)
-[![Dependencies](https://img.shields.io/david/semmel/on-screen-keyboard-detector.svg?style=flat-square)](https://david-dm.org/semmel/on-screen-keyboard-detector)
 [![Reactive Programming](https://img.shields.io/badge/code%20style-reactive%2C%20functional-blue?color=b7178c)](http://reactivex.io)
 
 On-screen keyboard detector
 =============================
 > Indirect detection of the presence of the on-screen keyboard (OSK) shown by mobile browsers when the user interacts with input controls on a webpage.
+
+Notice: Outdated Android implementation!
+--------------------------
+Now (since Chrome 94) one should use the [VirtualKeyboard API](https://developer.chrome.com/docs/web-platform/virtual-keyboard/). This should work more reliable then the current implementation on Android. 
+
+Whether to migrate this project to a full VirtualKeyboard API polyfill [is open for discussion](https://github.com/semmel/on-screen-keyboard-detector/pull/14)
 
 Background
 ----------
