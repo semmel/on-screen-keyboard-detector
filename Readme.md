@@ -62,6 +62,48 @@ if (isSupported()) {
 }
 ```
 
+### React
+You can write a simple React hook to make it compatible with react:
+```ts
+import {useEffect, useState} from 'react'
+import {subscribe, isSupported} from 'on-screen-keyboard-detector'
+
+
+export function useOnScreenKeyboardDetector(): boolean {
+    const [keyboardVisible, setKeyboardVisible] = useState<boolean>(false)
+
+    useEffect(() => {
+        let unsubscribe
+
+        if (isSupported()) {
+            unsubscribe = subscribe((visibility) => {
+                setKeyboardVisible(visibility === 'visible')
+            })
+        }
+
+        return () => {
+            if (unsubscribe) {
+                unsubscribe()
+            }
+        }
+    }, [])
+
+    return keyboardVisible
+}
+```
+
+```tsx
+function MyReactComponent() {
+    const keyboardVisible = useOnScreenKeyboardDetector()
+
+    return (
+        <div>
+            {keyboardVisible ? 'Keyboard is visible' : 'Keyboard is hidden'}
+        </div>
+    )
+}
+```
+
 API
 ---
 ### subscribe(listenerCallback): unsubscribe
